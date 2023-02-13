@@ -4,13 +4,12 @@
         v-model="toKorean"
         hide-details
         inset
-        :label="switchLabel"
     ></v-switch>
     <v-textarea
         clearable
         clear-icon="mdi-trash-can-outline"
         auto-grow
-        label="한/영타 변환기"
+        :label="switchLabel"
         v-model="inputText"
     ></v-textarea>
     {{ convertInputText }}
