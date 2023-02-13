@@ -4,6 +4,7 @@
         v-model="toKorean"
         hide-details
         inset
+        label="한/영 전환"
     ></v-switch>
     <v-textarea
         clearable
