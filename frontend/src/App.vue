@@ -1,5 +1,5 @@
 <template>
-  <v-app>
+  <v-app id="app">
     <v-main>
       <router-view />
     </v-main>
@@ -15,3 +15,15 @@ export default {
   }),
 };
 </script>
+<style>
+#app {
+  width: 70%;
+  margin: 0 auto;
+}
+
+@media screen and (max-width: 960px) {
+  #app {
+    width: 100%;
+  }
+}
+</style>

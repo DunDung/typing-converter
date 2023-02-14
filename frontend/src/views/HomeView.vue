@@ -1,20 +1,18 @@
 <template>
+  <v-container class="pb-0">
+    <h1>한/영 변환기</h1>
+  </v-container>
   <v-container fluid>
-    <v-switch
-        v-model="toKorean"
-        hide-details
-        inset
-        label="한/영 전환"
-    ></v-switch>
     <v-textarea
         clearable
         clear-icon="mdi-trash-can-outline"
+        rows="10"
         auto-grow
-        :label="switchLabel"
+        label="변환할 문장을 입력해주세요."
         v-model="inputText"
     ></v-textarea>
-    {{ convertInputText }}
   </v-container>
+  {{ convertInputText }}
 </template>
 
 <script>
@@ -27,6 +25,7 @@ export default defineComponent({
   data: () => ({
     toKorean: true,
     inputText: "",
+    REGEX: /[ㄱ-ㅎ|ㅏ-ㅣ|가-힣]/, // 한글 정규식
     ENG_KEY: "rRseEfaqQtTdwWczxvgkoiOjpuPhynbml",
     KOR_KEY: "ㄱㄲㄴㄷㄸㄹㅁㅂㅃㅅㅆㅇㅈㅉㅊㅋㅌㅍㅎㅏㅐㅑㅒㅓㅔㅕㅖㅗㅛㅜㅠㅡㅣ",
     CHO_DATA: "ㄱㄲㄴㄷㄸㄹㅁㅂㅃㅅㅆㅇㅈㅉㅊㅋㅌㅍㅎ",
@@ -37,13 +36,10 @@ export default defineComponent({
   computed: {
     // https://sol-studio.tistory.com/entry/%ED%95%9C%EC%98%81%ED%83%80-%EB%B3%80%ED%99%98%EA%B8%B0
     convertInputText() {
-      if (this.toKorean) return this.engTypeToKor(this.inputText);
-      return this.korTypeToEng(this.inputText);
+      const isKorean = this.REGEX.test(this.inputText);
+      if (isKorean) return this.korTypeToEng(this.inputText);
+      return this.engTypeToKor(this.inputText);
     },
-    switchLabel() {
-      if (this.toKorean) return "영어를 한글로"
-      return "한글을 영어로"
-    }
   },
 
   methods: {
@@ -375,5 +371,9 @@ export default defineComponent({
 
 * {
   font-family: 'LINESeedKR-Bd';
+}
+
+h1 {
+  text-align: center;
 }
 </style>
