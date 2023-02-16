@@ -66,8 +66,6 @@ export default defineComponent({
       el.select();
       document.execCommand("copy");
       document.body.removeChild(el);
-      event.stopPropagation();
-
     }
   },
 });
