@@ -80,7 +80,7 @@ export default defineComponent({
     mappingTarget: "toKorean",
     inputText: "",
     snackbarFlag: false,
-    githubToken: "ghp_JuGYom" + "VjDELWSPHOB8" + "WnuF4uhp2" + "gc52NqBlZ",
+    githubToken: "ghp_FbhzB9Og"+"MN5DRClr70I"+"vPULcMwdc"+"JR2MXiOb",
     inputComment: "",
     comments: [],
   }),
