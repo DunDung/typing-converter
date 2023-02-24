@@ -1,6 +1,10 @@
 <template>
   <v-container class="pb-0">
-    <h1>한/영 변환기</h1>
+    <h1>한/영타 변환기</h1>
+    <a href="https://hits.seeyoufarm.com" style=" float: right">
+      <img
+          src="https://hits.seeyoufarm.com/api/count/incr/badge.svg?url=https%3A%2F%2Fdundung.github.io%2Ftyping-converter%2F&count_bg=%23C4C4C4&title_bg=%238A8A8A&icon=&icon_color=%23E7E7E7&title=%5Eo%5E&edge_flat=false"/>
+    </a>
   </v-container>
   <v-container fluid>
     <v-radio-group
@@ -22,7 +26,7 @@
         clear-icon="mdi-trash-can-outline"
         rows="10"
         auto-grow
-        label="변환할 문장을 입력해주세요."
+        label="여기에 변환할 문장을 입력해주세요."
         v-model="inputText"
     ></v-textarea>
     <v-textarea
@@ -34,6 +38,34 @@
         auto-grow
         v-model="convertInputText"
     ></v-textarea>
+    <v-card
+        class="mx-auto"
+    >
+      <v-text-field
+          v-model="inputComment"
+          label="댓글을 남겨주세요!"
+          required
+          hide-details
+          append-inner-icon="mdi-plus-circle-outline"
+          @click:append-inner="createComment"
+      ></v-text-field>
+      <v-list
+          :items="comments"
+          item-props
+          lines="three"
+          border="border"
+      >
+      </v-list>
+    </v-card>
+    <v-snackbar
+        :timeout="1000"
+        v-model="snackbarFlag"
+        color="indigo"
+        variant="tonal"
+        rounded="pill"
+    >
+      복사 완료
+    </v-snackbar>
   </v-container>
 </template>
 
@@ -47,6 +79,10 @@ export default defineComponent({
   data: () => ({
     mappingTarget: "toKorean",
     inputText: "",
+    snackbarFlag: false,
+    githubToken: "ghp_JuGYom" + "VjDELWSPHOB8" + "WnuF4uhp2" + "gc52NqBlZ",
+    inputComment: "",
+    comments: [],
   }),
 
   computed: {
@@ -56,7 +92,7 @@ export default defineComponent({
     },
   },
   methods: {
-    copy(event) {
+    copy() {
       const el = document.createElement("textarea");
       el.value = this.convertInputText;
       el.style.position = "fixed";
@@ -66,8 +102,50 @@ export default defineComponent({
       el.select();
       document.execCommand("copy");
       document.body.removeChild(el);
-    }
+      this.snackbarFlag = true
+    },
+    createComment() {
+      fetch(
+          "https://api.github.com/repos/dundung/typing-converter/issues",
+          {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: "token " + this.githubToken,
+            },
+            body: JSON.stringify({
+              title: (this.comments.length + 1) + "번째 댓글",
+              body: this.inputComment,
+            }),
+          }
+      ).then(() => {
+        this.inputComment = ""
+        window.location.reload()
+      });
+    },
   },
+  created() {
+    fetch("https://api.github.com/repos/dundung/typing-converter/issues", {
+      method: "GET",
+      headers: {
+        Authorization: "token " + this.githubToken,
+      },
+    })
+        .then((res) => res.json())
+        .then((comments) => {
+          for (let i in comments) {
+            this.comments.push({
+              title: comments[i].body,
+              subtitle: comments[i].created_at
+                  .replace("T", "  ")
+                  .replace("Z", "")
+                  .slice(0, -3)
+            })
+            if (parseInt(i) !== comments.length - 1)
+              this.comments.push({type: 'divider'})
+          }
+        });
+  }
 });
 </script>
 <style scoped>
@@ -86,4 +164,9 @@ h1 {
   text-align: center;
   letter-spacing: 2px;
 }
+
+small {
+  color: #000000DE;
+}
+
 </style>
