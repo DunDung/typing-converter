@@ -42,9 +42,10 @@
     <v-card
         class="mx-auto"
     >
+      <v-card-title><v-label style="letter-spacing: 2px">댓글</v-label></v-card-title>
       <v-text-field
           v-model="inputComment"
-          label="댓글을 남겨주세요!"
+          label="여기에 댓글을 입력해주세요."
           required
           hide-details
           append-inner-icon="mdi-plus-circle-outline"

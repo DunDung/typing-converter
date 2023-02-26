@@ -4,6 +4,14 @@
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width,initial-scale=1.0">
+    <!--
+    icon 설정을 2번 작성한 이유:
+    1번만 설정하면 [if IE] 머시기하면서 IE에서만 적용되는 코드로 주석 처리됨.
+    build 되면서 여러 브라우저에 호환 되게 바뀌는 도중 생기는 버그 같음.
+    같은 증상인 stackoverflow 글은 많은데 원인은 밝혀진 바 없음. vue3 버그 같음.
+    임시 해결책으로 코드를 똑같이 2번 작성. 첫 번째는 주석 처리. 두 번째는 정상 적용됨.
+     -->
+    <link rel="icon" href="<%= BASE_URL %>keyboard.png">
     <link rel="icon" href="<%= BASE_URL %>keyboard.png">
     <title>한/영타 변환기</title>
   </head>
