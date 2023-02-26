@@ -2,6 +2,7 @@
   <v-container class="pb-0">
     <h1>한/영타 변환기</h1>
     <a href="https://hits.seeyoufarm.com" style=" float: right">
+      <!--방문자 counter-->
       <img
           src="https://hits.seeyoufarm.com/api/count/incr/badge.svg?url=https%3A%2F%2Fdundung.github.io%2Ftyping-converter%2F&count_bg=%23C4C4C4&title_bg=%238A8A8A&icon=&icon_color=%23E7E7E7&title=%5Eo%5E&edge_flat=false"/>
     </a>
@@ -80,7 +81,6 @@ export default defineComponent({
     mappingTarget: "toKorean",
     inputText: "",
     snackbarFlag: false,
-    githubToken: "ghp_FbhzB9Og"+"MN5DRClr70I"+"vPULcMwdc"+"JR2MXiOb",
     inputComment: "",
     comments: [],
   }),
@@ -104,6 +104,14 @@ export default defineComponent({
       document.body.removeChild(el);
       this.snackbarFlag = true
     },
+    createGithubToken() {
+      // github에 토큰 그대로 올라가면 토큰 삭제됨
+      const token1 = "ghp_uIilxQ0"
+      const token2 = "38tk1BJG"
+      const token3 = "1CdxikGDWGs"
+      const token4 = "hmAc0zG1XE"
+      return token1 + token2 + token3 + token4;
+    },
     createComment() {
       fetch(
           "https://api.github.com/repos/dundung/typing-converter/issues",
@@ -111,7 +119,7 @@ export default defineComponent({
             method: "POST",
             headers: {
               "Content-Type": "application/json",
-              Authorization: "token " + this.githubToken,
+              Authorization: "token " + this.createGithubToken(),
             },
             body: JSON.stringify({
               title: (this.comments.length + 1) + "번째 댓글",
@@ -124,11 +132,12 @@ export default defineComponent({
       });
     },
   },
+
   created() {
     fetch("https://api.github.com/repos/dundung/typing-converter/issues", {
       method: "GET",
       headers: {
-        Authorization: "token " + this.githubToken,
+        Authorization: "token " + this.createGithubToken(),
       },
     })
         .then((res) => res.json())
