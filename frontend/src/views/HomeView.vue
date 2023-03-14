@@ -27,9 +27,16 @@
         clear-icon="mdi-trash-can-outline"
         rows="10"
         auto-grow
-        label="여기에 변환할 문장을 입력해주세요."
         v-model="inputText"
-    ></v-textarea>
+    >
+      <template v-slot:label>
+        키보드로 타이핑한 영어를 한글로 변환해줍니다.<br>
+        그 반대 방향도 가능해요.<br>
+        여기에 변환할 문장을 입력해주세요.<br><br>
+        입력한 문장 비우기 기능 지원합니다.<br>
+        변환된 문장 복사 기능 지원합니다.<br>
+      </template>
+    </v-textarea>
     <v-textarea
         readonly
         rows="10"
@@ -42,7 +49,9 @@
     <v-card
         class="mx-auto"
     >
-      <v-card-title><v-label style="letter-spacing: 2px">댓글</v-label></v-card-title>
+      <v-card-title>
+        <v-label style="letter-spacing: 2px">댓글</v-label>
+      </v-card-title>
       <v-text-field
           v-model="inputComment"
           label="여기에 댓글을 입력해주세요."
@@ -129,32 +138,35 @@ export default defineComponent({
           }
       ).then(() => {
         this.inputComment = ""
-        window.location.reload()
+        this.getComments()
       });
     },
+    getComments() {
+      fetch("https://api.github.com/repos/dundung/typing-converter/issues", {
+        method: "GET",
+        headers: {
+          Authorization: "token " + this.createGithubToken(),
+        },
+      })
+          .then((res) => res.json())
+          .then((comments) => {
+            this.comments = []
+            for (let i in comments) {
+              this.comments.push({
+                title: comments[i].body,
+                subtitle: comments[i].created_at
+                    .replace("T", "  ")
+                    .replace("Z", "")
+                    .slice(0, -3)
+              })
+              if (parseInt(i) !== comments.length - 1)
+                this.comments.push({type: 'divider'})
+            }
+          });
+    }
   },
-
   created() {
-    fetch("https://api.github.com/repos/dundung/typing-converter/issues", {
-      method: "GET",
-      headers: {
-        Authorization: "token " + this.createGithubToken(),
-      },
-    })
-        .then((res) => res.json())
-        .then((comments) => {
-          for (let i in comments) {
-            this.comments.push({
-              title: comments[i].body,
-              subtitle: comments[i].created_at
-                  .replace("T", "  ")
-                  .replace("Z", "")
-                  .slice(0, -3)
-            })
-            if (parseInt(i) !== comments.length - 1)
-              this.comments.push({type: 'divider'})
-          }
-        });
+    this.getComments()
   }
 });
 </script>
@@ -178,5 +190,4 @@ h1 {
 small {
   color: #000000DE;
 }
-
 </style>
