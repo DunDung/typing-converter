@@ -1,28 +1,56 @@
 {
-  "expo": {
-    "name": "app",
-    "slug": "app",
-    "version": "1.0.0",
-    "orientation": "portrait",
-    "icon": "./assets/icon.png",
-    "userInterfaceStyle": "light",
-    "newArchEnabled": true,
-    "splash": {
-      "image": "./assets/splash-icon.png",
-      "resizeMode": "contain",
-      "backgroundColor": "#ffffff"
+  "expo" : {
+    "name" : "한영타변환기",
+    "slug" : "typing-converter",
+    "version" : "25.5.2",
+    "orientation" : "portrait",
+    "icon" : "./assets/icon.png",
+    "userInterfaceStyle" : "light",
+    "newArchEnabled" : true,
+    "splash" : {
+      "image" : "./assets/icon.png",
+      "resizeMode" : "contain",
+      "backgroundColor" : "#ffffff"
     },
-    "ios": {
-      "supportsTablet": true
-    },
-    "android": {
-      "adaptiveIcon": {
-        "foregroundImage": "./assets/adaptive-icon.png",
-        "backgroundColor": "#ffffff"
+    "ios" : {
+      "supportsTablet" : true,
+      "bundleIdentifier" : "com.typingconverter",
+      "config" : {
+        "usesNonExemptEncryption" : false
       }
     },
-    "web": {
-      "favicon": "./assets/favicon.png"
-    }
+    "android" : {
+      "package" : "com.typing_converter",
+      "versionCode" : 1,
+      "adaptiveIcon" : {
+        "foregroundImage" : "./assets/play-store.png",
+        "backgroundColor" : "#ffffff"
+      },
+      "permissions" : [
+        "com.google.android.gms.permission.AD_ID"
+      ]
+    },
+    "extra" : {
+      "eas" : {
+        "projectId" : "949b9326-50c0-4430-b64d-33eb99fae738"
+      }
+    },
+    "plugins" : [
+      [
+        "expo-build-properties",
+        {
+          "ios" : {
+            "useFrameworks" : "static"
+          }
+        }
+      ],
+      [
+        "react-native-google-mobile-ads",
+        {
+          "androidAppId" : "ca-app-pub-1298150935322847~8783205082",
+          "iosAppId" : "ca-app-pub-1298150935322847~1368110885"
+        }
+      ]
+    ]
   }
 }
