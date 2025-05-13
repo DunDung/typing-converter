@@ -12,9 +12,7 @@
     "remind" : "!!!!!! prebuild 후 프로덕션 빌드 !!!!!!!!!!",
     "ios build" : "EXPO_NO_CAPABILITY_SYNC=1 eas build --platform ios",
     "submit app-store" : "eas submit -p ios",
-    "android build" : "eas build --platform android",
-    "android" : "expo run:android",
-    "ios" : "expo run:ios"
+    "android build" : "eas build --platform android"
   },
   "dependencies" : {
     "expo" : "~52.0.46",
