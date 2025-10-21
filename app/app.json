@@ -21,7 +21,7 @@
     },
     "android" : {
       "package" : "com.typing_converter",
-      "versionCode" : 2,
+      "versionCode" : 3,
       "adaptiveIcon" : {
         "foregroundImage" : "./assets/play-store.png",
         "backgroundColor" : "#ffffff"
@@ -50,8 +50,8 @@
             "useFrameworks" : "static"
           },
           "android" : {
-            "compileSdkVersion" : 34,
-            "targetSdkVersion" : 34,
+            "compileSdkVersion" : 35,
+            "targetSdkVersion" : 35,
             "extraNdkBuildFlags" : [
               "-Wl,-z,max-page-size=16384"
             ]
