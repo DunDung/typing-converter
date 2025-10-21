@@ -2,7 +2,7 @@
   "expo" : {
     "name" : "한영타변환기",
     "slug" : "typing-converter",
-    "version" : "25.5.2",
+    "version" : "25.10.1",
     "orientation" : "portrait",
     "icon" : "./assets/icon.png",
     "userInterfaceStyle" : "light",
@@ -21,7 +21,7 @@
     },
     "android" : {
       "package" : "com.typing_converter",
-      "versionCode" : 1,
+      "versionCode" : 13,
       "adaptiveIcon" : {
         "foregroundImage" : "./assets/play-store.png",
         "backgroundColor" : "#ffffff"
@@ -48,6 +48,13 @@
         {
           "ios" : {
             "useFrameworks" : "static"
+          },
+          "android" : {
+            "compileSdkVersion" : 34,
+            "targetSdkVersion" : 34,
+            "extraNdkBuildFlags" : [
+              "-Wl,-z,max-page-size=16384"
+            ]
           }
         }
       ]
