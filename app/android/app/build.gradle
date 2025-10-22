@@ -91,7 +91,7 @@ android {
         applicationId 'com.typing_converter'
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
-        versionCode 3
+        versionCode 13
         versionName "25.10.1"
     }
     signingConfigs {
