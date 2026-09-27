@@ -173,3 +173,10 @@ cd android
 - App Store: 26.9.1의 빌드를 1에서 검증된 3으로 교체·저장. iPhone 4장과 iPad 2장의 이전 이미지 처리 오류를 발견해 로컬 원본으로 재등록, 순서 및 정상 썸네일 표시 확인. 아직 스크린샷 업로드 처리 중이라는 Apple 검증 메시지로 앱 심사 추가는 완료되지 않았다.
 - iOS 광고 제거 ad_free_lifetime: 심사 추가 시 심사 정보 스크린샷 필수 오류. 아직 제출되지 않음. Xcode 27의 Device Hub로 시뮬레이터 부팅을 복구했지만 iOS 18.4 StoreKit 상품 조회 오류로 정상 구매 화면을 캡처할 수 없음. 실제 iPhone의 광고 제거 모달 스크린샷 필요. 가격을 임의로 합성하거나 오류 화면을 심사에 제출하지 않았다.
 - 남은 작업: 실제 iPhone 구매 모달 캡처 첨부, 광고 제거 상품과 iOS 26.9.1(3)을 같은 심사에 추가 후 최종 제출. Apple 스토어 이미지 서버 처리 완료 및 Google 빠른 검사 결과 확인.
+
+## 2026-09-27 양 플랫폼 프로덕션 심사 접수 완료
+
+- iOS: 22:48경 앱 26.9.1 (3)과 비소모성 광고 제거 `ad_free_lifetime`을 같은 제출로 최종 접수. 제출 ID `05beb02e-5706-41ad-a7cf-c223ca2d1b1f`. App Store Connect에서 두 항목 모두 `심사 대기 중` 확인. 승인 후 자동 출시 설정 유지.
+- 사용자가 제공한 실제 iPad TestFlight 구매 화면을 2048×1536 JPEG로 변환하여 IAP 심사 이미지로 등록. 화면 내용과 실제 표시 가격은 변경하지 않음. 파일: `marketing/store-2026-09/review/ipad-ad-free-review.jpg`. TestFlight의 USD 표기와 한국 판매 가격 KRW 1,900을 심사 메모에 설명.
+- 스토어 미리보기 PNG 6장의 Apple 처리 오류가 반복되어 동일한 이미지를 JPEG로 재인코딩 후 재등록. iPhone 4장 순서 및 iPad 2장 확인, 제출 검증 통과. 최종 업로드 파일은 `marketing/store-2026-09/app-store-jpeg/`, `marketing/store-2026-09/app-store-ipad-jpeg/`에 보관.
+- Google Play: 18 (26.9.1) 프로덕션 및 스토어 변경사항 9개가 자동 검사를 마친 후 `변경사항을 검토 중입니다` 상태임을 확인. 양 플랫폼 모두 심사 접수 완료이며 승인/실제 배포 완료를 의미하지 않음.
