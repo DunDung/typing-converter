@@ -1,93 +1,50 @@
 <template>
-  <v-container class="pb-0">
-    <h1>한/영타 변환기</h1>
-  </v-container>
-
-  <v-container fluid>
-    <v-radio-group
-        v-model="mappingTarget"
-        inline
-        hide-details
-    >
-      <v-radio label="영어 -> 한글" value="toKorean"></v-radio>
-      <v-radio label="한글 -> 영어" value="toEnglish"></v-radio>
-    </v-radio-group>
-
-    <v-textarea
-        clearable
-        clear-icon="mdi-trash-can-outline"
-        rows="10"
-        auto-grow
-        v-model="inputText"
-        placeholder="키보드로 타이핑한 영어를 한글로 변환해줍니다.
-그 반대 방향도 가능해요.
-여기에 변환할 문장을 입력해주세요.
-
-입력한 문장 비우기 기능 지원합니다.
-변환된 문장 복사 기능 지원합니다."
-    ></v-textarea>
-
-    <v-textarea
-        readonly
-        rows="10"
-        append-inner-icon="mdi-content-copy"
-        @click:append-inner="copy"
-        label="변환 결과"
-        auto-grow
-        v-model="convertInputText"
-    ></v-textarea>
-
-    <div>
-      <!-- 건의함 카드 -->
-      <v-card
-          class="mx-auto pa-4"
-          max-width="500"
-          elevation="3"
-          @click="dialog = true"
-          style="cursor: pointer;"
-      >
-        <v-row align="center" no-gutters>
-          <v-col cols="auto">
-            <v-img
-                src="../../public/feedback_button.png"
-                alt="서비스 건의함"
-                width="80"
-                height="80"
-                class="me-4"
-                cover
-            />
-          </v-col>
-
-          <v-col>
-            <h4 style="margin: 0; font-weight: 400; color: gray">
-              <span style="font-size: 14px">(웬만하면 반영되는)</span> 서비스 건의함
-            </h4>
-          </v-col>
-        </v-row>
-      </v-card>
-
+  <v-container class="converter-shell" :class="{ 'native-shell': nativeApp, 'compact-shell': nativeApp && viewportHeight < 480 }" :style="nativeApp ? { height: viewportHeight + 'px' } : undefined">
+    <header v-if="!nativeApp" class="page-header">
+      <h1>한영타변환기</h1>
+      <p>잘못 입력한 한/영타를 바로 바꾸세요.</p>
+    </header>
+    <div class="direction-control" role="group" aria-label="변환 방향">
+      <button type="button" :class="{ selected: mappingTarget === 'toKorean' }" :aria-pressed="mappingTarget === 'toKorean'" @click="mappingTarget = 'toKorean'">영타 → 한글</button>
+      <button type="button" :class="{ selected: mappingTarget === 'toEnglish' }" :aria-pressed="mappingTarget === 'toEnglish'" @click="mappingTarget = 'toEnglish'">한타 → 영문</button>
+    </div>
+    <section class="text-panel input-panel" aria-label="변환할 문장">
+      <div class="panel-heading"><label for="converter-input">입력</label>
+        <button type="button" class="text-button" :disabled="!inputText" @click="clearInput">비우기</button>
+      </div>
+      <textarea id="converter-input" class="converter-textarea" v-model="inputText" rows="4" spellcheck="false" autocapitalize="off" autocomplete="off" autocorrect="off" :placeholder="mappingTarget === 'toKorean' ? '예: dkssudgktpdy → 안녕하세요' : '예: ㅗㄷㅣㅣㅐ → hello'"
+        aria-label="변환할 문장 입력"></textarea>
+    </section>
+    <section class="text-panel result-panel" aria-label="변환 결과">
+      <div class="panel-heading"><label for="converter-result">변환 결과</label><span class="result-hint">입력하면 바로 변환돼요</span></div>
+      <textarea id="converter-result" class="converter-textarea" :value="convertInputText" readonly rows="4" placeholder="변환 결과가 여기에 표시됩니다" aria-label="변환 결과"></textarea>
+      <v-btn class="copy-button" color="indigo-darken-1" height="44" prepend-icon="mdi-content-copy" elevation="0" :disabled="!convertInputText || copying" :loading="copying" @click="copy">결과 복사</v-btn>
+    </section>
+    <div v-if="!headerFeedback" class="feedback-link">
+      <v-btn class="feedback-button" variant="text" color="grey-darken-2" height="44" @click="dialog = true">의견 보내기</v-btn>
+    </div>
       <!-- 건의사항 입력 모달 -->
-      <v-dialog v-model="dialog" max-width="600">
-        <v-card>
-          <v-card-title class="text-h6">건의사항을 입력해주세요 ✨</v-card-title>
+      <v-dialog v-model="dialog" max-width="480">
+        <v-card rounded="xl">
+          <v-card-title class="text-h6 pt-5 px-6">의견 보내기</v-card-title>
           <v-card-text>
             <v-textarea
                 v-model="suggestionText"
-                label="건의 내용"
+                label="개선할 점이나 불편한 점을 알려주세요"
                 rows="5"
                 auto-grow
-                outlined
-                clearable
+                variant="outlined"
+                color="indigo-darken-1"
+                hide-details
             />
           </v-card-text>
           <v-card-actions>
             <v-spacer></v-spacer>
             <v-btn text @click="dialog = false">취소</v-btn>
-            <v-btn color="primary" @click="submitSuggestion">제출</v-btn>
+            <v-btn color="indigo-darken-1" :disabled="!suggestionText.trim()" @click="submitSuggestion">보내기</v-btn>
           </v-card-actions>
         </v-card>
       </v-dialog>
-    </div>
 
     <v-snackbar
         :timeout="1000"
@@ -96,7 +53,7 @@
         variant="tonal"
         rounded="pill"
     >
-      복사 완료
+      {{ copyMessage }}
     </v-snackbar>
     <v-snackbar
         :timeout="2000"
@@ -111,33 +68,63 @@
 </template>
 
 <script>
-import { defineComponent, ref, computed } from "vue";
+import { defineComponent, ref, computed, onMounted, onBeforeUnmount, nextTick } from "vue";
 import { englishToKorean, koreanToEnglish } from '../utils/converter';
+import { copyText } from "../utils/clipboard";
+import { connectFeedback } from "../utils/nativeFeedback.mjs";
 import * as emailjs from "@emailjs/browser";
 
 export default defineComponent({
   name: "HomeView",
 
   setup() {
+    const viewportHeight = ref(window.visualViewport?.height || window.innerHeight);
+    const resizeViewport = () => {
+      viewportHeight.value = Math.round(Math.min(window.innerHeight, window.visualViewport?.height || window.innerHeight));
+    };
+    const headerFeedback = ref(false);
+    let disconnectFeedback;
+    onMounted(async () => {
+      window.visualViewport?.addEventListener("resize", resizeViewport);
+      window.addEventListener("resize", resizeViewport);
+      resizeViewport();
+      disconnectFeedback = connectFeedback(window, {
+        onHeader: () => { headerFeedback.value = true; },
+        onOpen: () => { dialog.value = true; },
+      });
+      await nextTick();
+      window.ReactNativeWebView?.postMessage(JSON.stringify({ type: "converter-ready", capabilities: ["feedback-v1"] }));
+    });
+    onBeforeUnmount(() => {
+      disconnectFeedback?.();
+      window.visualViewport?.removeEventListener("resize", resizeViewport);
+      window.removeEventListener("resize", resizeViewport);
+    });
     const mappingTarget = ref("toKorean");
     const inputText = ref("");
     const snackbarFlag = ref(false);
+    const copyMessage = ref("");
+    const copying = ref(false);
+    const nativeApp = new URLSearchParams(window.location.search).get("native") === "1";
+    const clearInput = () => { inputText.value = ""; document.getElementById("converter-input")?.focus(); };
     const dialog = ref(false);
     const suggestionText = ref("");
     const suggestionSnackbarFlag = ref(false);
     emailjs.init("user_FRGW9AFFOhL8ApQvS3xev");
 
-    const copy = () => {
-      const el = document.createElement("textarea");
-      el.value = convertInputText.value;
-      el.style.position = "fixed";
-      el.style.top = "-9999px";
-      el.style.left = "-9999px";
-      document.body.appendChild(el);
-      el.select();
-      document.execCommand("copy");
-      document.body.removeChild(el);
-      snackbarFlag.value = true;
+    const copy = async () => {
+      if (!convertInputText.value || copying.value) return;
+      copying.value = true;
+      const text = convertInputText.value;
+      try {
+        await copyText(text);
+        copyMessage.value = "복사 완료! 원하는 곳에 붙여넣으세요.";
+      } catch {
+        copyMessage.value = "복사하지 못했어요. 결과를 길게 눌러 복사해 주세요.";
+      } finally {
+        copying.value = false;
+        snackbarFlag.value = true;
+      }
     };
 
     const submitSuggestion = () => {
@@ -163,11 +150,12 @@ export default defineComponent({
     }
 
     const convertInputText = computed(() => {
-      if (mappingTarget.value === "toEnglish") return koreanToEnglish(inputText.value);
-      return englishToKorean(inputText.value);
+      if (mappingTarget.value === "toEnglish") return koreanToEnglish(inputText.value || "");
+      return englishToKorean(inputText.value || "");
     });
 
     return {
+      viewportHeight, headerFeedback, nativeApp, clearInput, copyMessage, copying,
       mappingTarget,
       inputText,
       snackbarFlag,
@@ -183,23 +171,37 @@ export default defineComponent({
 </script>
 
 <style scoped>
-@font-face {
-  font-family: 'LINESeedKR-Bd';
-  src: url('https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_11-01@1.0/LINESeedKR-Bd.woff2') format('woff2');
-  font-weight: 700;
-  font-style: normal;
-}
-
-* {
-  font-family: 'LINESeedKR-Bd';
-}
-
-h1 {
-  text-align: center;
-  letter-spacing: 2px;
-}
-
-small {
-  color: #000000DE;
-}
+.converter-shell { max-width: 640px; padding: 16px; color: #18243b; }
+.native-shell { height: 100vh; height: 100dvh; min-height: 420px; display: flex; flex-direction: column; }
+.native-shell > .text-panel { flex: 1; min-height: 0; display: flex; flex-direction: column; }
+.native-shell > .input-panel { flex: 1.1; }
+.converter-textarea { display: block; width: 100%; flex: 1; min-height: 72px; margin-top: 4px; padding: 4px 0; resize: none; border: 0; outline: none; color: #18243b; font: inherit; font-size: 16px; line-height: 1.65; background: transparent; overflow-y: auto; }
+.converter-textarea::placeholder { color: #778297; opacity: 1; }
+.text-panel:focus-within { border-color: #9aa9df; }
+.page-header { margin: 8px 0 24px; }
+h1 { font-size: 26px; font-weight: 750; letter-spacing: -1px; }
+.page-header p { color: #64748b; font-size: 14px; margin-top: 6px; }
+.direction-control { display: flex; padding: 4px; border-radius: 12px; background: #e9edf6; margin-bottom: 12px; gap: 4px; }
+.direction-control button { flex: 1; min-height: 40px; border-radius: 9px; color: #52617b; font-size: 15px; font-weight: 600; }
+.direction-control button.selected { background: #fff; color: #334ec6; box-shadow: 0 1px 4px #18243b12; }
+button:focus-visible { outline: 3px solid #8097f0; outline-offset: 2px; }
+.text-panel { padding: 12px 16px; background: white; border: 1px solid #e1e7f1; border-radius: 16px; margin-bottom: 12px; }
+.panel-heading { display: flex; align-items: center; justify-content: space-between; gap: 8px; min-height: 36px; font-size: 14px; font-weight: 600; }
+.text-button { padding: 8px; min-height: 36px; color: #536786; font-size: 13px; }
+.text-button:disabled { opacity: .4; }
+.result-hint { color: #64748b; font-size: 12px; font-weight: 400; }
+.result-panel { background: #fdfdff; }
+.copy-button { display: flex; width: fit-content; min-width: 124px; flex: 0 0 auto; align-self: flex-end; margin: 12px 0 0 auto; border-radius: 10px; letter-spacing: 0; font-size: 14px; }
+:deep(textarea) { font-size: 16px; line-height: 1.6; }
+.feedback-link { flex: 0 0 auto; text-align: center; margin: 0; }
+.feedback-button { padding: 0 18px; border-radius: 8px; font-size: 14px; font-weight: 500; letter-spacing: 0; }
+  .native-shell.compact-shell { min-height: 360px; padding: 8px 12px; }
+  .native-shell.compact-shell .direction-control { margin-bottom: 8px; }
+  .native-shell.compact-shell .direction-control button { min-height: 36px; }
+  .native-shell.compact-shell .text-panel { min-height: 116px; padding: 8px 12px; margin-bottom: 8px; }
+  .native-shell.compact-shell .result-panel { min-height: 154px; }
+  .native-shell.compact-shell .panel-heading { min-height: 32px; }
+  .native-shell.compact-shell .text-button { min-height: 32px; padding: 6px 8px; }
+  .native-shell.compact-shell .converter-textarea { min-height: 48px; margin-top: 0; line-height: 1.5; }
+  .native-shell.compact-shell .copy-button { margin-top: 8px; }
 </style>
