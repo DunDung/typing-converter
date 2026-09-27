@@ -94,7 +94,8 @@ export default function App() {
             <SafeAreaView style={styles.page}>
                 <StatusBar style="dark" />
                 <View style={styles.header}>
-                    <Text accessibilityRole="header" style={styles.title}>
+                    <Text accessibilityRole="header" style={styles.title}
+                        onLongPress={() => Alert.alert("시작 광고 진단", ads.diagnostics())}>
                         한영타변환기
                     </Text>
                     <View style={styles.headerActions}>

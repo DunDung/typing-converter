@@ -13,6 +13,13 @@ import { canShowOpenAd, recordOpenAd } from "./policy.mjs";
 const HISTORY_KEY = "@typing-converter/open-ad-history-v1";
 
 export function useAds({ ownership, purchaseBusy }) {
+    const startedAt = useRef(Date.now());
+    const trace = useRef([]);
+    const note = useCallback((event) => {
+        const line = `${Date.now() - startedAt.current}ms ${event}`;
+        trace.current = [...trace.current.slice(-24), line];
+        console.info("[app-open]", line);
+    }, []);
     const [ready, setReady] = useState(false);
     const [error, setError] = useState(null);
     const [retryCount, setRetryCount] = useState(0);
@@ -23,15 +30,21 @@ export function useAds({ ownership, purchaseBusy }) {
     const [startupPending, setStartupPending] = useState(true);
     const startupFinished = useRef(false);
     const startupTimer = useRef(null);
-    const finishStartup = useCallback(() => {
+    const overallTimer = useRef(null);
+    const showingRef = useRef(false);
+    const tryShow = useRef(() => {});
+    const finishStartup = useCallback((reason) => {
+        if (reason) note(reason);
         startupFinished.current = true;
         clearTimeout(startupTimer.current);
+        clearTimeout(overallTimer.current);
         setStartupPending(false);
-    }, []);
+    }, [note]);
     useEffect(() => {
-        startupTimer.current = setTimeout(finishStartup, 3000);
-        return () => clearTimeout(startupTimer.current);
-    }, [finishStartup]);
+        note(`startup state=${AppState.currentState}`);
+        overallTimer.current = setTimeout(() => finishStartup("startup-timeout: 8s"), 8000);
+        return () => { clearTimeout(startupTimer.current); clearTimeout(overallTimer.current); };
+    }, [finishStartup, note]);
     const history = useRef(null);
     const attempted = useRef(false);
     const current = useRef({ ownership, purchaseBusy });
@@ -52,7 +65,13 @@ export function useAds({ ownership, purchaseBusy }) {
                 if (alive) finishStartup(); // Storage failure must not hold the startup screen.
             }
         })();
-        const subscription = AppState.addEventListener("change", (state) => setActive(state === "active"));
+        const subscription = AppState.addEventListener("change", (state) => {
+            note(`app-state=${state}`);
+            setActive(state === "active");
+            // iOS can start inactive or briefly become inactive for system UI.
+            if (state === "background" && !showingRef.current) finishStartup("backgrounded");
+            if (state === "active") tryShow.current();
+        });
         return () => {
             alive = false;
             subscription.remove();
@@ -60,10 +79,10 @@ export function useAds({ ownership, purchaseBusy }) {
     }, []);
 
     useEffect(() => {
-        if (!openAdId || ownership === "owned" || purchaseBusy || !active ||
+        if (!openAdId || ownership === "owned" || purchaseBusy || AppState.currentState === "background" ||
             (historyLoaded && !canShowOpenAd({ history: history.current, now: Date.now(),
                 contentReady: false, active: true, adFree: false, purchaseBusy: false }))) {
-            finishStartup();
+            finishStartup(`skip: ownership=${ownership}, busy=${purchaseBusy}, first=${history.current?.hasLaunched === false}, last=${history.current?.lastShownAt || 0}, count=${history.current?.count || 0}`);
         }
     }, [ownership, purchaseBusy, active, historyLoaded, finishStartup]);
 
@@ -73,12 +92,14 @@ export function useAds({ ownership, purchaseBusy }) {
     }, []);
 
     useEffect(() => {
+        note(`ownership=${ownership}`);
         if (ownership !== "free") return;
         let alive = true;
         let timer;
         let attempts = 0;
         const initialize = async () => {
             try {
+                note("consent-start");
                 let info;
                 try {
                     info = await AdsConsent.gatherConsent();
@@ -94,8 +115,10 @@ export function useAds({ ownership, purchaseBusy }) {
                     setError("광고 요청이 허용되지 않은 동의 상태입니다.");
                     return;
                 }
+                note("sdk-initialize");
                 await mobileAds().initialize();
                 if (alive) {
+                    note("sdk-ready");
                     setReady(true);
                     setError(null);
                 }
@@ -119,48 +142,72 @@ export function useAds({ ownership, purchaseBusy }) {
     useEffect(() => {
         if (!ready || !historyLoaded || !openAdId || attempted.current) return;
         attempted.current = true;
-        const eligible = () =>
-            canShowOpenAd({
-                history: history.current,
-                now: Date.now(),
-                contentReady: startupFinished.current,
-                active: AppState.currentState === "active",
-                adFree: current.current.ownership !== "free",
-                purchaseBusy: current.current.purchaseBusy,
-            });
-        if (!eligible()) { finishStartup(); return; }
+        const eligible = () => canShowOpenAd({
+            history: history.current, now: Date.now(), contentReady: startupFinished.current,
+            active: true, // Loading may begin while iOS is inactive; presentation may not.
+            adFree: current.current.ownership !== "free", purchaseBusy: current.current.purchaseBusy,
+        });
+        if (!eligible()) { finishStartup("request-skipped"); return; }
         let disposed = false;
-        const ad = AppOpenAd.createForAdRequest(openAdId, { requestNonPersonalizedAdsOnly: true });
-        const unsubscribers = [
-            ad.addAdEventListener(AdEventType.LOADED, () => {
-                if (disposed || !eligible()) return;
+        let loaded = false;
+        const unsubscribers = [];
+        const fail = (failure) => {
+            if (disposed) return;
+            showingRef.current = false;
+            setShowing(false);
+            finishStartup(`ad-error: ${failure?.code || "unknown"} ${failure?.message || ""}`);
+        };
+        try {
+            const ad = AppOpenAd.createForAdRequest(openAdId, { requestNonPersonalizedAdsOnly: true });
+            tryShow.current = () => {
+                if (disposed || !loaded || !eligible() || AppState.currentState !== "active") return;
+                loaded = false;
+                startupFinished.current = true;
                 clearTimeout(startupTimer.current);
-                startupFinished.current = true; // Never show a second ad in this session.
+                clearTimeout(overallTimer.current);
+                showingRef.current = true;
                 setShowing(true);
-                ad.show().catch(() => {
-                    if (!disposed) { setShowing(false); finishStartup(); }
-                });
-            }),
-            ad.addAdEventListener(AdEventType.OPENED, () => {
-                const next = recordOpenAd(history.current, Date.now());
-                history.current = next;
-                AsyncStorage.setItem(HISTORY_KEY, JSON.stringify(next)).catch(() => {});
-            }),
-            ad.addAdEventListener(AdEventType.CLOSED, () => { setShowing(false); finishStartup(); }),
-            ad.addAdEventListener(AdEventType.ERROR, () => { setShowing(false); finishStartup(); }),
-        ];
-        ad.load();
+                note("show-request");
+                try { Promise.resolve(ad.show()).catch(fail); } catch (failure) { fail(failure); }
+            };
+            unsubscribers.push(
+                ad.addAdEventListener(AdEventType.LOADED, () => {
+                    if (disposed) return;
+                    note("ad-loaded");
+                    loaded = true;
+                    tryShow.current();
+                }),
+                ad.addAdEventListener(AdEventType.OPENED, () => {
+                    note("ad-opened");
+                    const next = recordOpenAd(history.current, Date.now());
+                    history.current = next;
+                    AsyncStorage.setItem(HISTORY_KEY, JSON.stringify(next)).catch(() => {});
+                }),
+                ad.addAdEventListener(AdEventType.CLOSED, () => {
+                    showingRef.current = false;
+                    setShowing(false);
+                    finishStartup("ad-closed");
+                }),
+                ad.addAdEventListener(AdEventType.ERROR, fail),
+            );
+            note("ad-load-request");
+            // Give the ad its own loading window after ownership/consent/SDK setup.
+            startupTimer.current = setTimeout(() => finishStartup("ad-load-timeout: 3s"), 3000);
+            ad.load();
+        } catch (failure) { fail(failure); }
         return () => {
             disposed = true;
+            tryShow.current = () => {};
             unsubscribers.forEach((unsubscribe) => unsubscribe());
         };
-    }, [ready, historyLoaded, finishStartup]);
+    }, [ready, historyLoaded, finishStartup, note]);
 
     const privacyOptions = async () => {
         const info = await AdsConsent.showPrivacyOptionsForm();
         setReady(updateConsent(info));
     };
     return {
+        diagnostics: () => trace.current.join("\n"),
         startupPending,
         error,
         retry: () => setRetryCount((value) => value + 1),

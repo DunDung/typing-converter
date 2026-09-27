@@ -174,6 +174,7 @@ async function adsHook(history = { hasLaunched: true }, consent = {}, options = 
         },
     };
     const state = appState();
+    state.currentState = options.initialState ?? "active";
     const nativeAds = {
         __esModule: true,
         default: () => ({ initialize: async () => {} }),
@@ -342,9 +343,52 @@ test("show rejection releases startup and does not count impression", async () =
 test("unknown purchase state times out without serving ads", async (t) => {
     t.mock.timers.enable({ apis: ["setTimeout"] });
     const h = await adsHook(undefined, {}, { ownership: "loading" });
-    await act(async () => t.mock.timers.tick(3000));
+    await act(async () => t.mock.timers.tick(8000));
     assert.equal(h.hook.value.startupPending, false);
     await h.hook.update({ ownership: "free", purchaseBusy: false });
     assert.equal(h.loads, 0);
+    await h.hook.dispose();
+});
+
+test("iOS initial inactive state does not permanently skip startup ad", async () => {
+    const h = await adsHook(undefined, {}, { initialState: "inactive" });
+    try {
+        assert.equal(h.hook.value.startupPending, true);
+        await act(async () => h.state.emit("active"));
+        assert.equal(h.loads, 1);
+        await act(async () => h.events.loaded());
+        assert.equal(h.shows, 1);
+    } finally { await h.hook.dispose(); }
+});
+test("slow ownership lookup still leaves an ad loading window", async (t) => {
+    t.mock.timers.enable({ apis: ["setTimeout"] });
+    const h = await adsHook(undefined, {}, { ownership: "loading" });
+    try {
+        await act(async () => t.mock.timers.tick(3100));
+        await h.hook.update({ ownership: "free", purchaseBusy: false });
+        assert.equal(h.loads, 1);
+        await act(async () => h.events.loaded());
+        assert.equal(h.shows, 1);
+    } finally { await h.hook.dispose(); }
+});
+
+test("ad loaded while iOS inactive waits for active without losing it", async () => {
+    const h = await adsHook(undefined, {}, { initialState: "inactive" });
+    await act(async () => h.events.loaded());
+    assert.equal(h.shows, 0);
+    assert.equal(h.hook.value.startupPending, true);
+    await act(async () => h.state.emit("active"));
+    assert.equal(h.shows, 1);
+    await act(async () => h.state.emit("inactive"));
+    await act(async () => h.state.emit("active"));
+    assert.equal(h.shows, 1);
+    await h.hook.dispose();
+});
+test("diagnostics preserve the SDK error instead of silently skipping", async () => {
+    const h = await adsHook();
+    await act(async () => h.events.error({ code: "no-fill", message: "No ad available" }));
+    assert.match(h.hook.value.diagnostics(), /ad-load-request/);
+    assert.match(h.hook.value.diagnostics(), /no-fill/);
+    assert.equal(h.hook.value.startupPending, false);
     await h.hook.dispose();
 });
