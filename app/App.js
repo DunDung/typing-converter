@@ -32,11 +32,10 @@ export default function App() {
     const [pageError, setPageError] = useState(false);
     const [bannerError, setBannerError] = useState(null);
     const [bannerAttempt, setBannerAttempt] = useState(0);
-    const contentReady = useRef(false);
     const webView = useRef(null);
     const lastBack = useRef(0);
     const purchase = useAdFreePurchase();
-    const ads = useAds({ ownership: purchase.ownership, purchaseBusy: purchase.busy || purchaseVisible, contentReady });
+    const ads = useAds({ ownership: purchase.ownership, purchaseBusy: purchase.busy || purchaseVisible });
 
     useEffect(() => {
         if (!bannerError || bannerAttempt >= 2 || !ads.showBanner || keyboardVisible) return;
@@ -50,7 +49,6 @@ export default function App() {
     useEffect(() => {
         if (!loading) return;
         const timeout = setTimeout(() => {
-            contentReady.current = true;
             setLoading(false);
             setPageError(true);
         }, 15000);
@@ -89,7 +87,6 @@ export default function App() {
     }, [ads.showing, purchase.busy, purchaseVisible]);
 
     const finishLoading = () => {
-        contentReady.current = true; // Never reset on reload/navigation: an ad cannot interrupt an ongoing session.
         setLoading(false);
     };
     return (
@@ -105,7 +102,7 @@ export default function App() {
                         <Pressable
                             accessibilityRole="button"
                             accessibilityLabel="의견 보내기"
-                            disabled={loading || pageError || ads.showing}
+                            disabled={loading || ads.startupPending || pageError || ads.showing}
                             style={styles.headerButton}
                             onPress={() => webView.current?.injectJavaScript(
                                 'window.dispatchEvent(new CustomEvent("converter-native", {detail: {type: "open-feedback"}})); true;'
@@ -117,7 +114,7 @@ export default function App() {
                     <Pressable
                         accessibilityRole="button"
                         accessibilityLabel={purchase.ownership === "owned" ? "광고 제거 구매 정보" : "광고 제거 구매"}
-                        disabled={ads.showing}
+                        disabled={ads.showing || ads.startupPending}
                         onPress={() => {
                             Keyboard.dismiss();
                             setPurchaseVisible(true);
@@ -166,13 +163,13 @@ export default function App() {
                             }
                         }}
                     />
-                    {loading && (
+                    {(loading || ads.startupPending) && (
                         <View style={styles.loading} pointerEvents="auto">
                             <ActivityIndicator color="#334ec6" />
                             <Text style={styles.loadingText}>변환기를 불러오는 중이에요</Text>
                         </View>
                     )}
-                    {pageError && (
+                    {pageError && !ads.startupPending && (
                         <View style={styles.loading}>
                             <Text style={styles.loadingText}>
                                 {__DEV__
@@ -194,7 +191,7 @@ export default function App() {
                         </View>
                     )}
                 </View>
-                {ads.bannerEnabled && !loading && !pageError && !bannerError && (
+                {ads.bannerEnabled && !ads.startupPending && !loading && !pageError && !bannerError && (
                     <View style={[styles.banner, (!ads.showBanner || keyboardVisible) && { display: "none" }]}>
                         <BannerAd
                             key={bannerAttempt}

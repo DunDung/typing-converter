@@ -12,7 +12,7 @@ import { canShowOpenAd, recordOpenAd } from "./policy.mjs";
 
 const HISTORY_KEY = "@typing-converter/open-ad-history-v1";
 
-export function useAds({ ownership, purchaseBusy, contentReady }) {
+export function useAds({ ownership, purchaseBusy }) {
     const [ready, setReady] = useState(false);
     const [error, setError] = useState(null);
     const [retryCount, setRetryCount] = useState(0);
@@ -20,6 +20,18 @@ export function useAds({ ownership, purchaseBusy, contentReady }) {
     const [privacyRequired, setPrivacyRequired] = useState(false);
     const [showing, setShowing] = useState(false);
     const [historyLoaded, setHistoryLoaded] = useState(false);
+    const [startupPending, setStartupPending] = useState(true);
+    const startupFinished = useRef(false);
+    const startupTimer = useRef(null);
+    const finishStartup = useCallback(() => {
+        startupFinished.current = true;
+        clearTimeout(startupTimer.current);
+        setStartupPending(false);
+    }, []);
+    useEffect(() => {
+        startupTimer.current = setTimeout(finishStartup, 3000);
+        return () => clearTimeout(startupTimer.current);
+    }, [finishStartup]);
     const history = useRef(null);
     const attempted = useRef(false);
     const current = useRef({ ownership, purchaseBusy });
@@ -37,7 +49,7 @@ export function useAds({ ownership, purchaseBusy, contentReady }) {
                 await AsyncStorage.setItem(HISTORY_KEY, JSON.stringify({ ...parsed, hasLaunched: true }));
                 if (alive) setHistoryLoaded(true);
             } catch {
-                // Storage failure disables app-open ads for this launch.
+                if (alive) finishStartup(); // Storage failure must not hold the startup screen.
             }
         })();
         const subscription = AppState.addEventListener("change", (state) => setActive(state === "active"));
@@ -46,6 +58,14 @@ export function useAds({ ownership, purchaseBusy, contentReady }) {
             subscription.remove();
         };
     }, []);
+
+    useEffect(() => {
+        if (!openAdId || ownership === "owned" || purchaseBusy || !active ||
+            (historyLoaded && !canShowOpenAd({ history: history.current, now: Date.now(),
+                contentReady: false, active: true, adFree: false, purchaseBusy: false }))) {
+            finishStartup();
+        }
+    }, [ownership, purchaseBusy, active, historyLoaded, finishStartup]);
 
     const updateConsent = useCallback((info) => {
         setPrivacyRequired(info.privacyOptionsRequirementStatus === AdsConsentPrivacyOptionsRequirementStatus.REQUIRED);
@@ -69,6 +89,7 @@ export function useAds({ ownership, purchaseBusy, contentReady }) {
                 }
                 if (!alive) return;
                 if (!updateConsent(info)) {
+                    finishStartup();
                     setReady(false);
                     setError("광고 요청이 허용되지 않은 동의 상태입니다.");
                     return;
@@ -80,6 +101,7 @@ export function useAds({ ownership, purchaseBusy, contentReady }) {
                 }
             } catch (failure) {
                 if (!alive) return;
+                finishStartup();
                 setReady(false);
                 const message = `${failure.code || "ads/init"}: ${failure.message || String(failure)}`;
                 setError(message);
@@ -101,21 +123,22 @@ export function useAds({ ownership, purchaseBusy, contentReady }) {
             canShowOpenAd({
                 history: history.current,
                 now: Date.now(),
-                contentReady: contentReady.current,
+                contentReady: startupFinished.current,
                 active: AppState.currentState === "active",
                 adFree: current.current.ownership !== "free",
                 purchaseBusy: current.current.purchaseBusy,
             });
-        if (!eligible()) return;
+        if (!eligible()) { finishStartup(); return; }
         let disposed = false;
         const ad = AppOpenAd.createForAdRequest(openAdId, { requestNonPersonalizedAdsOnly: true });
         const unsubscribers = [
             ad.addAdEventListener(AdEventType.LOADED, () => {
                 if (disposed || !eligible()) return;
-                // No waits here: recheck immediately before show, never after the WebView is ready.
+                clearTimeout(startupTimer.current);
+                startupFinished.current = true; // Never show a second ad in this session.
                 setShowing(true);
                 ad.show().catch(() => {
-                    if (!disposed) setShowing(false);
+                    if (!disposed) { setShowing(false); finishStartup(); }
                 });
             }),
             ad.addAdEventListener(AdEventType.OPENED, () => {
@@ -123,21 +146,22 @@ export function useAds({ ownership, purchaseBusy, contentReady }) {
                 history.current = next;
                 AsyncStorage.setItem(HISTORY_KEY, JSON.stringify(next)).catch(() => {});
             }),
-            ad.addAdEventListener(AdEventType.CLOSED, () => setShowing(false)),
-            ad.addAdEventListener(AdEventType.ERROR, () => setShowing(false)),
+            ad.addAdEventListener(AdEventType.CLOSED, () => { setShowing(false); finishStartup(); }),
+            ad.addAdEventListener(AdEventType.ERROR, () => { setShowing(false); finishStartup(); }),
         ];
         ad.load();
         return () => {
             disposed = true;
             unsubscribers.forEach((unsubscribe) => unsubscribe());
         };
-    }, [ready, historyLoaded, contentReady]);
+    }, [ready, historyLoaded, finishStartup]);
 
     const privacyOptions = async () => {
         const info = await AdsConsent.showPrivacyOptionsForm();
         setReady(updateConsent(info));
     };
     return {
+        startupPending,
         error,
         retry: () => setRetryCount((value) => value + 1),
         bannerEnabled: ready && ownership === "free",

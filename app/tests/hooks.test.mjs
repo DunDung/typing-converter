@@ -51,6 +51,9 @@ async function renderHook(hook, props) {
         get value() {
             return value;
         },
+        async update(props) {
+            await act(async () => root.update(React.createElement(Component, props)));
+        },
         async dispose() {
             await act(async () => root.unmount());
         },
@@ -153,7 +156,7 @@ test("double tap launches one store transaction and pending does not grant acces
     assert.equal(hook.value.ownership, "free");
     await hook.dispose();
 });
-async function adsHook(history = { hasLaunched: true }, consent = {}) {
+async function adsHook(history = { hasLaunched: true }, consent = {}, options = {}) {
     const events = {};
     let loads = 0,
         shows = 0,
@@ -166,6 +169,7 @@ async function adsHook(history = { hasLaunched: true }, consent = {}) {
         load: () => loads++,
         show: async () => {
             shows++;
+            if (options.showFails) throw Error("show failed");
             events.opened?.();
         },
     };
@@ -190,7 +194,7 @@ async function adsHook(history = { hasLaunched: true }, consent = {}) {
         "./config": { openAdId: "test-app-open" },
     });
     const contentReady = { current: false },
-        hook = await renderHook(useAds, { ownership: "free", purchaseBusy: false, contentReady });
+        hook = await renderHook(useAds, { ownership: options.ownership || "free", purchaseBusy: false, contentReady });
     return {
         hook,
         events,
@@ -207,12 +211,15 @@ async function adsHook(history = { hasLaunched: true }, consent = {}) {
         },
     };
 }
-test("late ad never covers ready content", async () => {
+test("fast WebView still waits for the startup ad", async () => {
     const h = await adsHook();
     assert.equal(h.loads, 1);
     h.contentReady.current = true;
     await act(async () => h.events.loaded());
-    assert.equal(h.shows, 0);
+    assert.equal(h.shows, 1);
+    assert.equal(h.hook.value.startupPending, true);
+    await act(async () => h.events.closed());
+    assert.equal(h.hook.value.startupPending, false);
     await h.hook.dispose();
 });
 test("backgrounded app does not show an ad", async () => {
@@ -285,4 +292,59 @@ test("successful product retry clears stale errors and failed refresh removes st
     await act(async () => hook.value.refresh());
     assert.equal(hook.value.product, null);
     await hook.dispose();
+});
+
+test("startup timeout releases content and rejects late ads", async (t) => {
+    t.mock.timers.enable({ apis: ["setTimeout"] });
+    const h = await adsHook();
+    assert.equal(h.hook.value.startupPending, true);
+    await act(async () => t.mock.timers.tick(3000));
+    assert.equal(h.hook.value.startupPending, false);
+    await act(async () => h.events.loaded());
+    assert.equal(h.shows, 0);
+    await h.hook.dispose();
+});
+test("ad failure immediately releases startup screen", async () => {
+    const h = await adsHook();
+    await act(async () => h.events.error());
+    assert.equal(h.hook.value.startupPending, false);
+    await h.hook.dispose();
+});
+
+test("purchased user enters immediately without requesting ads", async () => {
+    const h = await adsHook(undefined, {}, { ownership: "owned" });
+    assert.equal(h.hook.value.startupPending, false);
+    assert.equal(h.loads, 0);
+    await h.hook.dispose();
+});
+test("recent impression skips startup wait and ad request", async () => {
+    const h = await adsHook({ hasLaunched: true, lastShownAt: Date.now() });
+    assert.equal(h.hook.value.startupPending, false);
+    assert.equal(h.loads, 0);
+    await h.hook.dispose();
+});
+test("ownership update while loading prevents ad display", async () => {
+    const h = await adsHook();
+    await h.hook.update({ ownership: "owned", purchaseBusy: false });
+    await act(async () => h.events.loaded());
+    assert.equal(h.shows, 0);
+    assert.equal(h.hook.value.startupPending, false);
+    await h.hook.dispose();
+});
+test("show rejection releases startup and does not count impression", async () => {
+    const h = await adsHook(undefined, {}, { showFails: true });
+    await act(async () => h.events.loaded());
+    assert.equal(h.hook.value.startupPending, false);
+    assert.equal(h.hook.value.showing, false);
+    assert.equal(h.saved.lastShownAt, undefined);
+    await h.hook.dispose();
+});
+test("unknown purchase state times out without serving ads", async (t) => {
+    t.mock.timers.enable({ apis: ["setTimeout"] });
+    const h = await adsHook(undefined, {}, { ownership: "loading" });
+    await act(async () => t.mock.timers.tick(3000));
+    assert.equal(h.hook.value.startupPending, false);
+    await h.hook.update({ ownership: "free", purchaseBusy: false });
+    assert.equal(h.loads, 0);
+    await h.hook.dispose();
 });

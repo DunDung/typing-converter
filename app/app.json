@@ -17,11 +17,12 @@
       "bundleIdentifier": "com.typingconverter",
       "config": {
         "usesNonExemptEncryption": false
-      }
+      },
+      "buildNumber": "2"
     },
     "android": {
       "package": "com.typing_converter",
-      "versionCode": 14,
+      "versionCode": 15,
       "adaptiveIcon": {
         "foregroundImage": "./assets/play-store.png",
         "backgroundColor": "#ffffff"
