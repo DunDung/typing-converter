@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "start": "expo start",
-    "dev-client": "npx expo start --dev-client",
+    "dev-client": "node scripts/start-dev-client.cjs",
     "android development build": "eas build -p android --profile development",
     "android preview build": "eas build -p android --profile preview",
     "prebuild": "npx expo prebuild --clean",
@@ -14,22 +14,29 @@
     "submit app-store": "eas submit -p ios",
     "android build": "eas build --platform android",
     "android": "expo run:android",
-    "ios": "expo run:ios"
+    "ios": "expo run:ios",
+    "test": "node --test tests/*.test.mjs",
+    "eas-build-post-install": "node scripts/check-production-config.mjs",
+    "dev:web": "npm --prefix ../frontend run serve -- --host 0.0.0.0 --port 8082"
   },
   "dependencies": {
-    "expo": "~52.0.46",
-    "expo-build-properties": "^0.14.6",
-    "expo-dev-client": "~5.0.20",
-    "expo-modules-core": "~2.2.3",
-    "expo-status-bar": "~2.0.1",
+    "@react-native-async-storage/async-storage": "2.2.0",
+    "expo": "~54.0.37",
+    "expo-build-properties": "~1.0.10",
+    "expo-dev-client": "~6.0.21",
+    "expo-status-bar": "~3.0.9",
+    "expo-system-ui": "~6.0.9",
     "prettier": "^3.5.3",
-    "react": "18.3.1",
-    "react-native": "0.76.9",
-    "react-native-google-mobile-ads": "^14.10.1",
-    "react-native-webview": "^13.13.5"
+    "react": "19.1.0",
+    "react-native": "0.81.5",
+    "react-native-google-mobile-ads": "^15.8.3",
+    "react-native-purchases": "^10.9.1",
+    "react-native-safe-area-context": "~5.6.0",
+    "react-native-webview": "13.15.0"
   },
   "devDependencies": {
-    "@babel/core": "^7.20.0"
+    "@babel/core": "^7.20.0",
+    "react-test-renderer": "^19.1.0"
   },
   "private": true
 }

@@ -1,60 +1,58 @@
 {
-  "expo" : {
-    "name" : "한영타변환기",
-    "slug" : "typing-converter",
-    "version" : "25.10.1",
-    "orientation" : "portrait",
-    "icon" : "./assets/icon.png",
-    "userInterfaceStyle" : "light",
-    "newArchEnabled" : true,
-    "splash" : {
-      "image" : "./assets/icon.png",
-      "resizeMode" : "contain",
-      "backgroundColor" : "#ffffff"
+  "expo": {
+    "name": "한영타변환기",
+    "slug": "typing-converter",
+    "version": "26.9.1",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "light",
+    "newArchEnabled": true,
+    "splash": {
+      "image": "./assets/icon.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#ffffff"
     },
-    "ios" : {
-      "supportsTablet" : true,
-      "bundleIdentifier" : "com.typingconverter",
-      "config" : {
-        "usesNonExemptEncryption" : false
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.typingconverter",
+      "config": {
+        "usesNonExemptEncryption": false
       }
     },
-    "android" : {
-      "package" : "com.typing_converter",
-      "versionCode" : 13,
-      "adaptiveIcon" : {
-        "foregroundImage" : "./assets/play-store.png",
-        "backgroundColor" : "#ffffff"
+    "android": {
+      "package": "com.typing_converter",
+      "versionCode": 14,
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/play-store.png",
+        "backgroundColor": "#ffffff"
       },
-      "permissions" : [
+      "permissions": [
         "com.google.android.gms.permission.AD_ID"
-      ]
+      ],
+      "edgeToEdgeEnabled": true
     },
-    "extra" : {
-      "eas" : {
-        "projectId" : "949b9326-50c0-4430-b64d-33eb99fae738"
+    "extra": {
+      "eas": {
+        "projectId": "949b9326-50c0-4430-b64d-33eb99fae738"
       }
     },
-    "plugins" : [
+    "plugins": [
       [
         "react-native-google-mobile-ads",
         {
-          "androidAppId" : "ca-app-pub-1298150935322847~8783205082",
-          "iosAppId" : "ca-app-pub-1298150935322847~1368110885"
+          "androidAppId": "ca-app-pub-1298150935322847~8783205082",
+          "iosAppId": "ca-app-pub-1298150935322847~1368110885"
         }
       ],
       [
         "expo-build-properties",
         {
-          "ios" : {
-            "useFrameworks" : "static"
+          "ios": {
+            "useFrameworks": "static"
           },
-          "android" : {
-            "compileSdkVersion" : 35,
-            "targetSdkVersion" : 35,
-            "extraNdkBuildFlags" : [
-              "-Wl,-z,max-page-size=16384"
-            ]
+          "android": {
+            "compileSdkVersion": 36,
+            "targetSdkVersion": 36
           }
         }
       ]

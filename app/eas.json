@@ -1,19 +1,35 @@
 {
-  "cli" : {
-    "version" : ">= 16.3.3",
-    "appVersionSource" : "local"
+  "cli": {
+    "version": ">= 16.3.3",
+    "appVersionSource": "local"
   },
-  "build" : {
-    "development" : {
-      "developmentClient" : true,
-      "distribution" : "internal"
+  "submit": {
+    "production": {
+      "ios": {
+        "ascAppId": "6745451167"
+      }
+    }
+  },
+  "build": {
+    "development": {
+      "developmentClient": true,
+      "distribution": "internal"
     },
-    "preview" : {
-      "android" : {
-        "buildType" : "apk"
+    "preview": {
+      "android": {
+        "buildType": "apk"
       },
-      "distribution" : "internal"
+      "distribution": "internal"
     },
-    "production" : {}
+    "production": {
+      "env": {
+        "EXPO_PUBLIC_AD_FREE_IOS_PRODUCT_ID": "ad_free_lifetime",
+        "EXPO_PUBLIC_REVENUECAT_IOS_API_KEY": "appl_ExCzJWJGppNIpXTOrEECPaYFgpu",
+        "EXPO_PUBLIC_AD_FREE_ANDROID_PRODUCT_ID": "ad_free_lifetime",
+        "EXPO_PUBLIC_REVENUECAT_ANDROID_API_KEY": "goog_NwNMLVbaXibiPjrkxVbBHmDshFB",
+        "EXPO_PUBLIC_ADMOB_ANDROID_APP_OPEN_ID": "ca-app-pub-1298150935322847/7616897370",
+        "EXPO_PUBLIC_ADMOB_IOS_APP_OPEN_ID": "ca-app-pub-1298150935322847/5991066920"
+      }
+    }
   }
 }

@@ -171,3 +171,8 @@ gradle-app.setting
 # End of https://www.toptal.com/developers/gitignore/api/gradle,intellij,java
 /.idea/
 /frontend/node_modules/
+
+# Local monetization configuration
+/app/.env
+/app/.env.local
+/app/.env.*.local
