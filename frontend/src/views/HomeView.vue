@@ -37,11 +37,12 @@
                 color="indigo-darken-1"
                 hide-details
             />
+            <p class="text-caption mt-3">보내신 의견은 개발자에게 전달돼요. <a href="./privacy.html" target="_blank" rel="noopener">개인정보 처리방침</a></p>
           </v-card-text>
           <v-card-actions>
             <v-spacer></v-spacer>
-            <v-btn text @click="dialog = false">취소</v-btn>
-            <v-btn color="indigo-darken-1" :disabled="!suggestionText.trim()" @click="submitSuggestion">보내기</v-btn>
+            <v-btn text :disabled="sendingSuggestion" @click="dialog = false">취소</v-btn>
+            <v-btn color="indigo-darken-1" :disabled="!suggestionText.trim() || sendingSuggestion" :loading="sendingSuggestion" @click="submitSuggestion">보내기</v-btn>
           </v-card-actions>
         </v-card>
       </v-dialog>
@@ -58,11 +59,11 @@
     <v-snackbar
         :timeout="2000"
         v-model="suggestionSnackbarFlag"
-        color="success"
+        :color="suggestionFailed ? 'error' : 'success'"
         variant="tonal"
         rounded="pill"
     >
-      건의사항이 제출되었습니다! 감사합니다 ✨
+      {{ suggestionFailed ? '전송하지 못했어요. 잠시 후 다시 시도해 주세요.' : '의견을 보내주셔서 감사합니다!' }}
     </v-snackbar>
   </v-container>
 </template>
@@ -110,6 +111,8 @@ export default defineComponent({
     const dialog = ref(false);
     const suggestionText = ref("");
     const suggestionSnackbarFlag = ref(false);
+    const sendingSuggestion = ref(false);
+    const suggestionFailed = ref(false);
     emailjs.init("user_FRGW9AFFOhL8ApQvS3xev");
 
     const copy = async () => {
@@ -127,16 +130,19 @@ export default defineComponent({
       }
     };
 
-    const submitSuggestion = () => {
-      if (suggestionText.value.trim()) {
-        console.log('제출된 건의사항:', suggestionText.value);
-        sendMail('한영타 변환기 건의사항', suggestionText.value);
-
+    const submitSuggestion = async () => {
+      if (!suggestionText.value.trim() || sendingSuggestion.value) return;
+      sendingSuggestion.value = true;
+      suggestionFailed.value = false;
+      try {
+        await sendMail('한영타 변환기 건의사항', suggestionText.value);
         suggestionText.value = '';
         dialog.value = false;
-        suggestionSnackbarFlag.value = true; // 스낵바 띄우기!
-      } else {
-        alert('건의 내용을 입력해주세요.');
+      } catch {
+        suggestionFailed.value = true;
+      } finally {
+        sendingSuggestion.value = false;
+        suggestionSnackbarFlag.value = true;
       }
     };
 
@@ -145,7 +151,7 @@ export default defineComponent({
         nickname: nickname,
         comment: comment,
       };
-      emailjs
+      return emailjs
           .send("service_2syktss", "template_4nk0rnw", templateParams)
     }
 
@@ -164,7 +170,7 @@ export default defineComponent({
       convertInputText,
       copy,
       submitSuggestion,
-      suggestionSnackbarFlag
+      suggestionSnackbarFlag, sendingSuggestion, suggestionFailed
     };
   },
 });
