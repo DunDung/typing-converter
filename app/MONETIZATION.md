@@ -14,7 +14,7 @@
 
 ## 활성화에 필요한 콘솔 설정
 
-2026-09-27 AdMob 앱 오픈 광고 단위를 생성하고 EAS production 환경에 반영했다. 두 플랫폼 모두 광고 단위 수준 하루 2회 제한을 적용한다. iOS 상품과 RevenueCat 공개 SDK 키는 설정했으나 Android 구매 설정, 실제 결제 검증과 앱 출시는 미완료다.
+2026-09-27 AdMob 앱 오픈 광고 단위를 생성하고 EAS production 환경에 반영했다. 두 플랫폼 모두 광고 단위 수준 하루 2회 제한을 적용한다. 두 플랫폼 상품과 RevenueCat 공개 SDK 키, 구매 검증 자격 증명 및 스토어 알림 연결을 완료했다. 실제 결제 검증과 앱 출시는 미완료다.
 
 - Android: `ca-app-pub-1298150935322847/7616897370`
 - iOS: `ca-app-pub-1298150935322847/5991066920`
@@ -81,7 +81,7 @@ cd android
 - 완료: iOS 프로덕션/Sandbox 서버 알림을 RevenueCat 해당 앱 URL에 연결. 실제 iOS 상품을 default Offering의 lifetime 패키지에도 연결.
 - 완료: 웹 커밋 `078c213` 배포. 의견 전송 성공/실패 처리, 앱 전용 화면의 네이버 분석 비활성화, `https://dundung.github.io/typing-converter/privacy.html` 공개 확인. App Store 개인정보 URL 수정 및 실제 SDK·구매·문의 데이터 8개 항목 공개. 입력 문장·카드 정보는 수집하지 않음.
 - 완료: AdMob 유럽 동의 메시지 ‘한영타변환기 · 유럽 광고 동의’를 해당 iOS/Android 2개 앱에만 게시. EEA/영국/스위스 대상, 동의 거절 활성화. 미국 규정 메시지는 미구성.
-- 완료: 사용자 승인 후 전용 Google Cloud 프로젝트 및 서비스 계정 생성, API 활성화, Play 앱 권한 부여, RevenueCat JSON 등록. 구매 검증 권한 오류는 아직 남아 있으며 아래 후속 상태 참조.
+- 완료: 사용자 승인 후 전용 Google Cloud 프로젝트 및 서비스 계정 생성, API 활성화, Play 앱 권한 부여, RevenueCat JSON 등록. 구매 검증 자격 증명과 RTDN 연결 검증을 완료했으며 아래 후속 상태 참조.
 - 대기: 실기기 TestFlight 상품 가격 확인 요청. iOS 시뮬레이터의 StoreKit 상품 조회는 빈 목록이라 실제 결제·복원 성공을 검증하지 못함. 모의 테스트 23개만 통과한 상태. 실제 결제·복원·환불 검증, 심사용 스크린샷, 양 스토어 심사 제출이 남음.
 
 - 완료: Google Play 일회성 제품 `ad_free_lifetime`, 구매 옵션 `buy` 생성·활성화. 한국 KRW 1,900 및 173개 지역 자동 환산 가격 설정. 이전 결제 라이브러리 호환 옵션 활성, 다중 수량 구매 비활성. RevenueCat Android 실상품 `prod288ee64d71` 생성 및 Published 상태 확인. `ad_free` entitlement와 default Offering의 `$rc_lifetime` 패키지 연결 완료.
@@ -92,10 +92,18 @@ cd android
 
 - 사용자 승인으로 `typing-converter-rc` 프로젝트(번호 `364579553627`) 생성 및 기존 홍준성 결제 계정 연결 완료.
 - 사용자 API 약관 동의 후 Google Play Android Developer API, Google Play Developer Reporting API, Cloud Pub/Sub API 활성화 확인.
-- `revenuecat-service-account@typing-converter-rc.iam.gserviceaccount.com` 생성. 전용 프로젝트에 Pub/Sub Editor와 Monitoring Viewer 부여.
+- `revenuecat-service-account@typing-converter-rc.iam.gserviceaccount.com` 생성. 전용 프로젝트에 처음 Pub/Sub Editor와 Monitoring Viewer를 부여했고, 2026-09-27 사용자 승인 후 Pub/Sub Editor를 Pub/Sub Admin으로 교체했다. Monitoring Viewer는 유지하며 다른 프로젝트 권한은 변경하지 않았다.
 - Google Play에서 해당 서비스 계정 활성 확인. 한영타변환기 앱만 대상으로 앱 정보 조회/앱 품질 조회/재무 데이터 조회/주문 및 구독 관리 부여. 다른 앱·출시·관리자 권한은 부여하지 않음.
 - 사용자가 저장한 서비스 계정 JSON을 RevenueCat Android 앱에 업로드·저장 완료. 비밀 키 내용은 저장소나 앱에 포함하지 않음.
 - RevenueCat Android 상품 `prod288ee64d71` (`ad_free_lifetime`) Published / Non-consumable 확인. `ad_free` entitlement의 연결 상품 목록과 default Offering의 `$rc_lifetime`에 Play Store 상품 표시를 확인.
-- 미완료: RevenueCat 자격 증명 재검증에서 Google Play 구매 검증의 insufficient permissions 오류가 남음. 서비스 계정의 Play 앱 권한과 Cloud Pub/Sub Editor/Monitoring Viewer는 콘솔에서 확인했음. 공식 문서상 새 자격 증명 반영에 최대 약 36시간이 걸릴 수 있으나, 실제 원인이 전파 지연인지 확정하지 않음.
-- 미완료: Google developer notifications의 `Play-Store-Notifications` 연결 시 Pub/Sub topic 생성 권한 오류 발생. 권한 반영 후 다시 연결하고, Play 수익 창출 설정에서 일회성 상품/무효화 알림까지 포함한 RTDN 설정 및 테스트 수신 확인 필요. 임의로 관리자 권한을 추가하지 않음.
+- 완료: RevenueCat Android 앱에서 `Valid credentials` 확인. 기존 Google Play 구매 검증 insufficient permissions 오류 해소. Play 앱 범위 권한은 그대로 유지했다. 상품 설명 저장 및 Cloud 권한 변경 이후 정상화되었으며 정확한 단일 원인은 확정하지 않는다.
+- 완료: `projects/typing-converter-rc/topics/Play-Store-Notifications` 연결. Play Console에서 일회성 상품/무효화 알림을 포함한 RTDN 저장 및 테스트 발송. RevenueCat `Connected to Google`, 마지막 수신 `2026-09-27 07:25 UTC` 확인. 이는 알림 연결 확인이며 실제 결제·환불 테스트 완료를 의미하지 않는다.
 - 출시 게이트: 실제 스토어 상품 조회·샌드박스 구매/복원 확인, iOS 인앱 구매 심사 스크린샷 및 최신 앱 스크린샷, 양 스토어 심사 제출은 아직 미완료.
+
+## 2026-09-27 스토어 이미지 교체
+
+- `marketing/store-2026-09/`에 실제 iOS 시뮬레이터 화면과 HTML/CSS 구성 원본, 생성 일러스트 및 최종 PNG 보관.
+- App Store iPhone: 1290×2796 이미지 4장 업로드, 변환/양방향/복사/간편 사용 순으로 정렬 완료.
+- Google Play 휴대전화: 1080×1920 이미지 4장 및 1024×500 대표 이미지 교체·저장 완료. 설명도 새 기능·광고 제거 구매·데이터 처리 범위에 맞춰 수정. 아직 검토 전송 전.
+- 남음: iPad 및 Play 7/10인치 태블릿 이미지 교체. Mac 잠금으로 새 태블릿 시뮬레이터 촬영 대기. 새 이미지 5개에 Play AI 생성·수정 라벨 적용 완료.
+- 미완료: 실기기 상품 조회·구매/복원, iOS IAP 심사용 스크린샷, 양 스토어 심사 제출.
