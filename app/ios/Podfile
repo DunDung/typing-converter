@@ -53,6 +53,17 @@ target 'app' do
   )
 
   post_install do |installer|
+    # Xcode 27 rejects resource bundles targeting versions below iOS 15.
+    # Keep pod targets aligned with the app's existing iOS 15.1 minimum.
+    installer.pods_project.targets.each do |target|
+      target.build_configurations.each do |build_config|
+        minimum = podfile_properties['ios.deploymentTarget'] || '15.1'
+        current = build_config.build_settings['IPHONEOS_DEPLOYMENT_TARGET']
+        if current && Gem::Version.new(current) < Gem::Version.new(minimum)
+          build_config.build_settings['IPHONEOS_DEPLOYMENT_TARGET'] = minimum
+        end
+      end
+    end
     react_native_post_install(
       installer,
       config[:reactNativePath],

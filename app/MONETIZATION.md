@@ -143,3 +143,12 @@ cd android
 - Android/iOS AdMob 앱 오픈 단위 모두 광고 단위/앱 수준 제한 없음 확인.
 - 시뮬레이터 로그: 시작 299ms 광고 요청, 668ms SDK network-error. 새 로직의 실제 요청은 확인했으나 광고 표시 자체는 네트워크 오류로 미검증.
 - iOS: Xcode 27.0 (27A266a) 업데이트 완료. 사용자 승인 후 새 라이선스 Agree 클릭. 시스템 관리자 인증은 사용자 직접 입력 대기. CocoaPods 1.17.0, Fastlane 2.240.1 준비 완료. iOS 3 빌드/업로드는 아직 미완료.
+
+- 사용자 실기기 확인: Android 17 수정본에서 앱 오픈 광고 실제 노출 확인 완료. iOS는 필수 구성요소 설치 및 SDK 27 준비 완료 후 로컬 빌드 진행 중.
+
+## iOS 3 로컬 빌드 및 업로드
+
+- Xcode 27 대응: 라이브러리 리소스 번들의 최소 iOS 버전을 앱의 기존 최소 15.1로 정렬. 앱 지원 범위 변경 없음.
+- Apple WWDR G3 중간 인증서 복구 후 기존 배포 인증서 검증 통과. `/tmp` 경로의 Metro 불일치를 피하기 위해 실제 사용자 캐시 경로에서 로컬 EAS 빌드.
+- iOS 26.9.1 (3) 로컬 빌드 성공. IPA: `/private/tmp/typing-ios3-artifacts/build-1790512118291.ipa`.
+- EAS 제출 `63c617fd-bd76-475f-af6c-a05e1aa23045`: App Store Connect 업로드 성공. TestFlight 처리 및 테스터 연결 확인 진행 중.
