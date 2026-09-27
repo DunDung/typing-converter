@@ -72,7 +72,7 @@
 import { defineComponent, ref, computed, onMounted, onBeforeUnmount, nextTick } from "vue";
 import { englishToKorean, koreanToEnglish } from '../utils/converter';
 import { copyText } from "../utils/clipboard";
-import { connectFeedback } from "../utils/nativeFeedback.mjs";
+import { connectFeedback, announceConverterReady } from "../utils/nativeFeedback.mjs";
 import * as emailjs from "@emailjs/browser";
 
 export default defineComponent({
@@ -85,6 +85,7 @@ export default defineComponent({
     };
     const headerFeedback = ref(false);
     let disconnectFeedback;
+    let stopReadyAnnouncement;
     onMounted(async () => {
       window.visualViewport?.addEventListener("resize", resizeViewport);
       window.addEventListener("resize", resizeViewport);
@@ -94,10 +95,11 @@ export default defineComponent({
         onOpen: () => { dialog.value = true; },
       });
       await nextTick();
-      window.ReactNativeWebView?.postMessage(JSON.stringify({ type: "converter-ready", capabilities: ["feedback-v1"] }));
+      stopReadyAnnouncement = announceConverterReady(window);
     });
     onBeforeUnmount(() => {
       disconnectFeedback?.();
+      stopReadyAnnouncement?.();
       window.visualViewport?.removeEventListener("resize", resizeViewport);
       window.removeEventListener("resize", resizeViewport);
     });
