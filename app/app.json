@@ -22,7 +22,7 @@
     },
     "android": {
       "package": "com.typing_converter",
-      "versionCode": 17,
+      "versionCode": 18,
       "adaptiveIcon": {
         "foregroundImage": "./assets/play-store.png",
         "backgroundColor": "#ffffff"

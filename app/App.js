@@ -18,6 +18,7 @@ import { StatusBar } from "expo-status-bar";
 import { bannerAdId } from "./src/monetization/config";
 import { useAdFreePurchase } from "./src/monetization/useAdFreePurchase";
 import { useAds } from "./src/monetization/useAds";
+import { isConverterMessage } from "./src/monetization/webMessage.mjs";
 import AdFreeModal from "./src/components/AdFreeModal";
 
 const PAGE_URL = __DEV__
@@ -33,6 +34,7 @@ export default function App() {
     const [bannerError, setBannerError] = useState(null);
     const [bannerAttempt, setBannerAttempt] = useState(0);
     const webView = useRef(null);
+    const currentPage = useRef(PAGE_URL);
     const lastBack = useRef(0);
     const purchase = useAdFreePurchase();
     const ads = useAds({ ownership: purchase.ownership, purchaseBusy: purchase.busy || purchaseVisible });
@@ -133,10 +135,13 @@ export default function App() {
                         ref={webView}
                         source={{ uri: PAGE_URL }}
                         style={styles.webView}
-                        onLoadStart={() => setFeedbackAvailable(false)}
+                        onLoadStart={(event) => {
+                            currentPage.current = event.nativeEvent.url;
+                            setFeedbackAvailable(false);
+                        }}
                         onLoadEnd={finishLoading}
                         onMessage={(event) => {
-                            if (event.nativeEvent.url?.split("?")[0] !== PAGE_URL.split("?")[0]) return;
+                            if (!isConverterMessage(event.nativeEvent.url, currentPage.current, PAGE_URL, Platform.OS)) return;
                             try {
                                 const message = JSON.parse(event.nativeEvent.data);
                                 if (message.type === "converter-ready") {
