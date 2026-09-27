@@ -230,7 +230,7 @@ test("backgrounded app does not show an ad", async () => {
     assert.equal(h.shows, 0);
     await h.hook.dispose();
 });
-test("shown ad persists the impression cap", async () => {
+test("shown ad persists the impression diagnostics", async () => {
     const h = await adsHook();
     await act(async () => h.events.loaded());
     assert.equal(h.shows, 1);
@@ -240,9 +240,9 @@ test("shown ad persists the impression cap", async () => {
     assert.equal(h.hook.value.showing, false);
     await h.hook.dispose();
 });
-test("first launch never requests app-open ad", async () => {
+test("first launch requests app-open ad", async () => {
     const h = await adsHook({ hasLaunched: false });
-    assert.equal(h.loads, 0);
+    assert.equal(h.loads, 1);
     assert.equal(h.saved.hasLaunched, true);
     await h.hook.dispose();
 });
@@ -299,7 +299,7 @@ test("startup timeout releases content and rejects late ads", async (t) => {
     t.mock.timers.enable({ apis: ["setTimeout"] });
     const h = await adsHook();
     assert.equal(h.hook.value.startupPending, true);
-    await act(async () => t.mock.timers.tick(3000));
+    await act(async () => t.mock.timers.tick(5000));
     assert.equal(h.hook.value.startupPending, false);
     await act(async () => h.events.loaded());
     assert.equal(h.shows, 0);
@@ -318,10 +318,10 @@ test("purchased user enters immediately without requesting ads", async () => {
     assert.equal(h.loads, 0);
     await h.hook.dispose();
 });
-test("recent impression skips startup wait and ad request", async () => {
+test("recent impression does not block a new launch", async () => {
     const h = await adsHook({ hasLaunched: true, lastShownAt: Date.now() });
-    assert.equal(h.hook.value.startupPending, false);
-    assert.equal(h.loads, 0);
+    assert.equal(h.hook.value.startupPending, true);
+    assert.equal(h.loads, 1);
     await h.hook.dispose();
 });
 test("ownership update while loading prevents ad display", async () => {
@@ -343,7 +343,7 @@ test("show rejection releases startup and does not count impression", async () =
 test("unknown purchase state times out without serving ads", async (t) => {
     t.mock.timers.enable({ apis: ["setTimeout"] });
     const h = await adsHook(undefined, {}, { ownership: "loading" });
-    await act(async () => t.mock.timers.tick(8000));
+    await act(async () => t.mock.timers.tick(12000));
     assert.equal(h.hook.value.startupPending, false);
     await h.hook.update({ ownership: "free", purchaseBusy: false });
     assert.equal(h.loads, 0);
@@ -389,6 +389,20 @@ test("diagnostics preserve the SDK error instead of silently skipping", async ()
     await act(async () => h.events.error({ code: "no-fill", message: "No ad available" }));
     assert.match(h.hook.value.diagnostics(), /ad-load-request/);
     assert.match(h.hook.value.diagnostics(), /no-fill/);
+    assert.equal(h.hook.value.startupPending, false);
+    await h.hook.dispose();
+});
+
+ test("ad arriving after three seconds still shows during startup", async (t) => {
+    t.mock.timers.enable({ apis: ["setTimeout"] });
+    const h = await adsHook();
+    await act(async () => t.mock.timers.tick(4000));
+    assert.equal(h.hook.value.startupPending, true);
+    await act(async () => h.events.loaded());
+    assert.equal(h.shows, 1);
+    await act(async () => t.mock.timers.tick(15000));
+    assert.equal(h.hook.value.startupPending, true);
+    await act(async () => h.events.closed());
     assert.equal(h.hook.value.startupPending, false);
     await h.hook.dispose();
 });

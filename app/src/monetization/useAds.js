@@ -42,7 +42,7 @@ export function useAds({ ownership, purchaseBusy }) {
     }, [note]);
     useEffect(() => {
         note(`startup state=${AppState.currentState}`);
-        overallTimer.current = setTimeout(() => finishStartup("startup-timeout: 8s"), 8000);
+        overallTimer.current = setTimeout(() => finishStartup("startup-timeout: 12s"), 12000);
         return () => { clearTimeout(startupTimer.current); clearTimeout(overallTimer.current); };
     }, [finishStartup, note]);
     const history = useRef(null);
@@ -56,13 +56,13 @@ export function useAds({ ownership, purchaseBusy }) {
             try {
                 const raw = await AsyncStorage.getItem(HISTORY_KEY);
                 const parsed = raw ? JSON.parse(raw) : { hasLaunched: false };
-                // Corrupt history must never bypass the cap.
+                // History is diagnostic only; it must not block a fresh launch.
                 if (!parsed || typeof parsed.hasLaunched !== "boolean") throw new Error("Invalid history");
                 if (alive) history.current = parsed;
                 await AsyncStorage.setItem(HISTORY_KEY, JSON.stringify({ ...parsed, hasLaunched: true }));
                 if (alive) setHistoryLoaded(true);
             } catch {
-                if (alive) finishStartup(); // Storage failure must not hold the startup screen.
+                if (alive) { history.current = { hasLaunched: false }; setHistoryLoaded(true); }
             }
         })();
         const subscription = AppState.addEventListener("change", (state) => {
@@ -79,9 +79,7 @@ export function useAds({ ownership, purchaseBusy }) {
     }, []);
 
     useEffect(() => {
-        if (!openAdId || ownership === "owned" || purchaseBusy || AppState.currentState === "background" ||
-            (historyLoaded && !canShowOpenAd({ history: history.current, now: Date.now(),
-                contentReady: false, active: true, adFree: false, purchaseBusy: false }))) {
+        if (!openAdId || ownership === "owned" || purchaseBusy || AppState.currentState === "background") {
             finishStartup(`skip: ownership=${ownership}, busy=${purchaseBusy}, first=${history.current?.hasLaunched === false}, last=${history.current?.lastShownAt || 0}, count=${history.current?.count || 0}`);
         }
     }, [ownership, purchaseBusy, active, historyLoaded, finishStartup]);
@@ -110,7 +108,7 @@ export function useAds({ ownership, purchaseBusy }) {
                 }
                 if (!alive) return;
                 if (!updateConsent(info)) {
-                    finishStartup();
+                    finishStartup("consent-disallowed");
                     setReady(false);
                     setError("광고 요청이 허용되지 않은 동의 상태입니다.");
                     return;
@@ -124,7 +122,7 @@ export function useAds({ ownership, purchaseBusy }) {
                 }
             } catch (failure) {
                 if (!alive) return;
-                finishStartup();
+                finishStartup(`init-error: ${failure.code || "ads/init"} ${failure.message || String(failure)}`);
                 setReady(false);
                 const message = `${failure.code || "ads/init"}: ${failure.message || String(failure)}`;
                 setError(message);
@@ -192,7 +190,7 @@ export function useAds({ ownership, purchaseBusy }) {
             );
             note("ad-load-request");
             // Give the ad its own loading window after ownership/consent/SDK setup.
-            startupTimer.current = setTimeout(() => finishStartup("ad-load-timeout: 3s"), 3000);
+            startupTimer.current = setTimeout(() => finishStartup("ad-load-timeout: 5s"), 5000);
             ad.load();
         } catch (failure) { fail(failure); }
         return () => {

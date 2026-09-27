@@ -5,7 +5,6 @@ import {
     recordOpenAd,
     hasAdFreeEntitlement,
     dayKey,
-    OPEN_AD_INTERVAL_MS,
 } from "../src/monetization/policy.mjs";
 const now = new Date(2026, 8, 13, 12).getTime();
 const eligible = {
@@ -24,27 +23,17 @@ test("returning free user can see an ad only during initial loading", () => {
         { active: false },
         { adFree: true },
         { purchaseBusy: true },
-        { history: null },
-        { history: { hasLaunched: false } },
     ]) {
         assert.equal(canShowOpenAd({ ...eligible, ...override }), false);
     }
 });
-test("four hour cap survives restart and does not reset at midnight", () => {
-    const lastShownAt = now - OPEN_AD_INTERVAL_MS + 1;
-    assert.equal(canShowOpenAd({ ...eligible, history: { hasLaunched: true, lastShownAt, day: "yesterday" } }), false);
-    assert.equal(canShowOpenAd({ ...eligible, history: { hasLaunched: true, lastShownAt: lastShownAt - 1 } }), true);
+test("first install and recent impressions do not suppress startup requests", () => {
+    for (const history of [null, { hasLaunched: false }, { hasLaunched: true, lastShownAt: now, day: dayKey(now), count: 20 }]) {
+        assert.equal(canShowOpenAd({ ...eligible, history }), true);
+    }
 });
-test("daily cap and next day reset", () => {
-    const full = { hasLaunched: true, day: dayKey(now), count: 2 };
-    assert.equal(canShowOpenAd({ ...eligible, history: full }), false);
-    const tomorrow = now + 24 * 60 * 60 * 1000;
-    assert.equal(canShowOpenAd({ ...eligible, history: full, now: tomorrow }), true);
-    assert.equal(recordOpenAd(full, tomorrow).count, 1);
-    assert.equal(recordOpenAd({ ...full, count: 1 }, now).count, 2);
-});
-test("clock rollback cannot bypass interval", () => {
-    assert.equal(canShowOpenAd({ ...eligible, history: { hasLaunched: true, lastShownAt: now + 1000 } }), false);
+test("impression history still records actual displays", () => {
+    assert.equal(recordOpenAd({ count: 3, day: dayKey(now) }, now).count, 4);
 });
 test("only an active ad_free entitlement unlocks ad removal", () => {
     for (const info of [

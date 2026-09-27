@@ -31,7 +31,7 @@ cd app
 npx eas-cli build --platform android --profile production
 ```
 
-현재 버전은 `26.9.1` / `versionCode: 14`입니다. Play Console에 이미 사용한 코드가 있다면 그보다 큰 값으로 변경하고 다시 prebuild해야 합니다. 경고 해제에는 API 36을 대상으로 빌드한 새 AAB를 Play Console에 제출하고 출시하는 과정이 필요합니다.
+현재 버전은 `26.9.1` / `versionCode: 17`입니다. Play Console에 이미 사용한 코드가 있다면 그보다 큰 값으로 변경하고 다시 prebuild해야 합니다. 경고 해제에는 API 36을 대상으로 빌드한 새 AAB를 Play Console에 제출하고 출시하는 과정이 필요합니다.
 
 출시 전 Android 16 기기에서 상태 표시줄·내비게이션 영역과 콘텐츠/광고가 겹치지 않는지, 키보드 입력·변환·뒤로가기 두 번 종료가 정상인지 확인합니다.
 
