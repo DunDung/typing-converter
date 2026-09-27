@@ -152,3 +152,5 @@ cd android
 - Apple WWDR G3 중간 인증서 복구 후 기존 배포 인증서 검증 통과. `/tmp` 경로의 Metro 불일치를 피하기 위해 실제 사용자 캐시 경로에서 로컬 EAS 빌드.
 - iOS 26.9.1 (3) 로컬 빌드 성공. IPA: `/private/tmp/typing-ios3-artifacts/build-1790512118291.ipa`.
 - EAS 제출 `63c617fd-bd76-475f-af6c-a05e1aa23045`: App Store Connect 업로드 성공. TestFlight 처리 및 테스터 연결 확인 진행 중.
+
+- TestFlight 완료 확인: iOS 26.9.1 (3), Apple 처리 완료. 기존 Team (Expo) 내부 그룹 테스터 2명 연결 및 새 테스트 내용 저장 완료. iOS 실기기 광고 노출은 사용자 확인 대기.
