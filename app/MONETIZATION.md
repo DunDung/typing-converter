@@ -74,16 +74,28 @@ cd android
 - 가격 확정: Android/iOS 한국 판매 가격 일회성 1,900원 (2026-09-27 사용자 승인).
 - 완료: App Store Connect 비소모품 `ad_free_lifetime` (Apple ID `6816602725`) 생성. 한국 기준 가격 1,900원, 나머지 지역 자동 환산, 기본 전체 판매 지역 및 한국어 표시 이름/설명 저장. 아직 제출 준비 중이며 첫 상품은 새 앱 버전과 함께 심사해야 한다.
 - 완료: RevenueCat 프로젝트 `316a9dc3`, iOS 앱 `appb0f13c3fd3` 생성. 사용자 승인 후 별도 인앱 구매 P8 키를 등록하고 `Valid credentials` 확인. 실상품 `prode210646fce`를 `ad_free` entitlement에 연결했고 production EAS에 공개 iOS SDK 키/상품 ID 반영. 비밀 키는 저장소나 앱에 넣지 않았다.
-- 완료: RevenueCat 이메일 인증 및 Android 앱 항목 `app4d8385151b` (`com.typing_converter`) 생성. Android 서비스 계정 자격 증명은 아직 미등록.
+- 완료: RevenueCat 이메일 인증 및 Android 앱 항목 `app4d8385151b` (`com.typing_converter`) 생성. Android 서비스 계정 JSON도 등록했으며 상세 검증 상태는 아래 후속 항목 참조.
 - 참고: 온보딩의 Test Store 상품은 실스토어 상품이 아니다. 실상품은 수동으로 연결했으며 App Store Connect API 자동 가져오기/판매 상태 조회 키는 미등록이다. 앱은 상품 ID 직접 조회를 사용하므로 Offering 연결은 필수가 아니다.
 - 완료: iOS production 빌드 `f010c817-3b28-4744-959b-ac801fcd8272` 성공, EAS 제출 `34cb03eb-253f-487f-87fa-b6a8a10eb01f`로 App Store Connect 업로드 완료. TestFlight에서 26.9.1 (1) 처리 완료 및 기존 Team (Expo) 그룹 연결 확인. 앱 심사 제출은 아직 하지 않음.
 - 완료: Android production 빌드 `6a18678e-387c-49fa-aa65-3b4bf09e3b8f` 성공. EAS 기존 업로드 서명키 사용. Play 내부 테스트에 14 (26.9.1), target SDK 36 번들 업로드 및 출시 완료. 한영타변환기 전용 내부 테스터 목록(본인 계정 1명)을 연결하고 트랙 활성 확인. 프로덕션 심사 제출은 아직 하지 않음.
 - 완료: iOS 프로덕션/Sandbox 서버 알림을 RevenueCat 해당 앱 URL에 연결. 실제 iOS 상품을 default Offering의 lifetime 패키지에도 연결.
 - 완료: 웹 커밋 `078c213` 배포. 의견 전송 성공/실패 처리, 앱 전용 화면의 네이버 분석 비활성화, `https://dundung.github.io/typing-converter/privacy.html` 공개 확인. App Store 개인정보 URL 수정 및 실제 SDK·구매·문의 데이터 8개 항목 공개. 입력 문장·카드 정보는 수집하지 않음.
 - 완료: AdMob 유럽 동의 메시지 ‘한영타변환기 · 유럽 광고 동의’를 해당 iOS/Android 2개 앱에만 게시. EEA/영국/스위스 대상, 동의 거절 활성화. 미국 규정 메시지는 미구성.
-- 대기: Google Cloud 전용 `typing-converter-rc` 프로젝트 생성에 결제 계정 선택이 필수여서 기존 ‘홍준성’ 결제 계정 연결 승인을 요청함. 아직 프로젝트/서비스 계정/JSON/Play 권한은 만들지 않음. Android SDK 공개 키와 예정 상품 ID는 빌드 설정에 반영했으나 백엔드 구매 검증 연결은 미완료.
+- 완료: 사용자 승인 후 전용 Google Cloud 프로젝트 및 서비스 계정 생성, API 활성화, Play 앱 권한 부여, RevenueCat JSON 등록. 구매 검증 권한 오류는 아직 남아 있으며 아래 후속 상태 참조.
 - 대기: 실기기 TestFlight 상품 가격 확인 요청. iOS 시뮬레이터의 StoreKit 상품 조회는 빈 목록이라 실제 결제·복원 성공을 검증하지 못함. 모의 테스트 23개만 통과한 상태. 실제 결제·복원·환불 검증, 심사용 스크린샷, 양 스토어 심사 제출이 남음.
 
-- 완료: Google Play 일회성 제품 `ad_free_lifetime`, 구매 옵션 `buy` 생성·활성화. 한국 KRW 1,900 및 173개 지역 자동 환산 가격 설정. 이전 결제 라이브러리 호환 옵션 활성, 다중 수량 구매 비활성. RevenueCat 상품 생성 화면에 Android 앱이 아직 나타나지 않아 서비스 계정 자격 증명 연결 후 실상품/entitlement/Offering 연결 필요.
+- 완료: Google Play 일회성 제품 `ad_free_lifetime`, 구매 옵션 `buy` 생성·활성화. 한국 KRW 1,900 및 173개 지역 자동 환산 가격 설정. 이전 결제 라이브러리 호환 옵션 활성, 다중 수량 구매 비활성. RevenueCat Android 실상품 `prod288ee64d71` 생성 및 Published 상태 확인. `ad_free` entitlement와 default Offering의 `$rc_lifetime` 패키지 연결 완료.
 - 완료: Google Play 개인정보처리방침 URL을 공개 GitHub Pages 방침으로 변경하고, 데이터 보안 신고를 기존 ‘수집 없음’에서 광고 SDK/구매 내역/선택적 의견 전송을 포함한 8개 데이터 유형으로 수정·저장. 게시 개요에 검토 전송 대기 상태.
 - 내부 테스트 참여 링크: https://play.google.com/apps/internaltest/4701714254390060366 (등록된 본인 Google 계정으로 참여).
+
+## Google Cloud 연결 후속 상태
+
+- 사용자 승인으로 `typing-converter-rc` 프로젝트(번호 `364579553627`) 생성 및 기존 홍준성 결제 계정 연결 완료.
+- 사용자 API 약관 동의 후 Google Play Android Developer API, Google Play Developer Reporting API, Cloud Pub/Sub API 활성화 확인.
+- `revenuecat-service-account@typing-converter-rc.iam.gserviceaccount.com` 생성. 전용 프로젝트에 Pub/Sub Editor와 Monitoring Viewer 부여.
+- Google Play에서 해당 서비스 계정 활성 확인. 한영타변환기 앱만 대상으로 앱 정보 조회/앱 품질 조회/재무 데이터 조회/주문 및 구독 관리 부여. 다른 앱·출시·관리자 권한은 부여하지 않음.
+- 사용자가 저장한 서비스 계정 JSON을 RevenueCat Android 앱에 업로드·저장 완료. 비밀 키 내용은 저장소나 앱에 포함하지 않음.
+- RevenueCat Android 상품 `prod288ee64d71` (`ad_free_lifetime`) Published / Non-consumable 확인. `ad_free` entitlement의 연결 상품 목록과 default Offering의 `$rc_lifetime`에 Play Store 상품 표시를 확인.
+- 미완료: RevenueCat 자격 증명 재검증에서 Google Play 구매 검증의 insufficient permissions 오류가 남음. 서비스 계정의 Play 앱 권한과 Cloud Pub/Sub Editor/Monitoring Viewer는 콘솔에서 확인했음. 공식 문서상 새 자격 증명 반영에 최대 약 36시간이 걸릴 수 있으나, 실제 원인이 전파 지연인지 확정하지 않음.
+- 미완료: Google developer notifications의 `Play-Store-Notifications` 연결 시 Pub/Sub topic 생성 권한 오류 발생. 권한 반영 후 다시 연결하고, Play 수익 창출 설정에서 일회성 상품/무효화 알림까지 포함한 RTDN 설정 및 테스트 수신 확인 필요. 임의로 관리자 권한을 추가하지 않음.
+- 출시 게이트: 실제 스토어 상품 조회·샌드박스 구매/복원 확인, iOS 인앱 구매 심사 스크린샷 및 최신 앱 스크린샷, 양 스토어 심사 제출은 아직 미완료.
