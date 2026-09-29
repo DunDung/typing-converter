@@ -196,4 +196,4 @@ cd android
 - `TypingConverterSceneDelegate`에서 UIWindowScene 창을 생성하고 React Native 시작. Expo 앱 활성화/백그라운드 및 링크 콜백 전달. Info.plist scene manifest 등록, 여러 창 비활성화. SDK 54 prebuild용 플러그인으로 재생성 시에도 유지.
 - 자동 테스트 41개 통과. Release 시뮬레이터: iOS 18.4 실행/변환/구매 모달/의견 모달 확인. iOS 27 iPhone 17 Pro Max 정상 실행/변환, iPad Air 11-inch (M3) 시작 광고 표시·닫기·변환기 및 배너 로드 확인. 실제 iOS 27 하드웨어 검증은 아님.
 - 로컬 EAS 빌드 26.9.1 (4) 성공. IPA `/tmp/typing-ios4-artifacts/build-1790676023202.ipa`. 실제 아카이브의 iOS 27 SDK, 빌드 번호, scene manifest 확인.
-- EAS Submit `5b1d54cb-ada9-48cc-9d41-d22183acbc53` Apple 업로드 성공. 재심사 최종 제출은 아직 미완료: 브라우저 연결 실패 및 열린 제출 탭이 사라지는 문제로 UI 작업 대기.
+- EAS Submit `5b1d54cb-ada9-48cc-9d41-d22183acbc53` Apple 업로드 성공. 2026-09-29 20:50 KST 재심사 최종 제출 완료. 기존 제출 `05beb02e-5706-41ad-a7cf-c223ca2d1b1f`에 26.9.1 (4)와 광고 제거 상품을 함께 제출하여 두 항목 모두 `심사 대기 중` 확인. 심사 메모에 UIScene 수정과 시뮬레이터 검증 범위 명시. 승인 후 자동 출시 유지. 증빙 `/tmp/typing-ios4-review-resubmitted.png`.
