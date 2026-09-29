@@ -180,3 +180,12 @@ cd android
 - 사용자가 제공한 실제 iPad TestFlight 구매 화면을 2048×1536 JPEG로 변환하여 IAP 심사 이미지로 등록. 화면 내용과 실제 표시 가격은 변경하지 않음. 파일: `marketing/store-2026-09/review/ipad-ad-free-review.jpg`. TestFlight의 USD 표기와 한국 판매 가격 KRW 1,900을 심사 메모에 설명.
 - 스토어 미리보기 PNG 6장의 Apple 처리 오류가 반복되어 동일한 이미지를 JPEG로 재인코딩 후 재등록. iPhone 4장 순서 및 iPad 2장 확인, 제출 검증 통과. 최종 업로드 파일은 `marketing/store-2026-09/app-store-jpeg/`, `marketing/store-2026-09/app-store-ipad-jpeg/`에 보관.
 - Google Play: 18 (26.9.1) 프로덕션 및 스토어 변경사항 9개가 자동 검사를 마친 후 `변경사항을 검토 중입니다` 상태임을 확인. 양 플랫폼 모두 심사 접수 완료이며 승인/실제 배포 완료를 의미하지 않음.
+
+
+## 2026-09-29 구매 이메일 알림 연결
+
+- 전용 Firebase `typing-converter-rc`에 구매 알림 함수와 Firestore 중복 방지 기록 배포. RevenueCat 프로덕션 비소모성 구매 웹훅 연결 및 콘솔 테스트 200 확인.
+- iOS/Android 광고 제거 실제 유료 구매를 기존 수신처 `ebseud6135@gmail.com`에 알림. 테스트 구매·과거 구매·동일 거래 중복은 발송하지 않음. 상세 운영 정보는 `../notifications/README.md`.
+- EmailJS 템플릿은 기존 의견 보내기 변수와 고정 수신처를 보존하여 개선. 승인된 테스트 메일 1통 성공(09:14:19 KST). 앱 코드 및 빌드 변경 없음. 실제 신규 유료 구매 전체 흐름은 아직 관측하지 않음.
+- Play Console 확인: Android 18 (26.9.1), 제출 7의 변경사항 9개가 2026-09-27 22:34에 출시됨.
+- 사용자가 iOS 심사 거절을 보고함. App Store Connect 로그인 만료로 거절 사유는 아직 확인하지 못했으며 Apple 로그인/2FA 완료 후 확인 필요.

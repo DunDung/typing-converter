@@ -176,3 +176,6 @@ gradle-app.setting
 /app/.env
 /app/.env.local
 /app/.env.*.local
+/notifications/functions/node_modules/
+/notifications/functions/.env*
+/notifications/.secrets/
