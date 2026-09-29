@@ -189,3 +189,11 @@ cd android
 - EmailJS 템플릿은 기존 의견 보내기 변수와 고정 수신처를 보존하여 개선. 승인된 테스트 메일 1통 성공(09:14:19 KST). 앱 코드 및 빌드 변경 없음. 실제 신규 유료 구매 전체 흐름은 아직 관측하지 않음.
 - Play Console 확인: Android 18 (26.9.1), 제출 7의 변경사항 9개가 2026-09-27 22:34에 출시됨.
 - 사용자가 iOS 심사 거절을 보고함. App Store Connect 로그인 만료로 거절 사유는 아직 확인하지 못했으며 Apple 로그인/2FA 완료 후 확인 필요.
+
+## 2026-09-29 iOS 27 실행 크래시 수정 및 빌드 4 업로드
+
+- Apple이 첨부한 iPhone18,2 / iPad15,3 로그 모두 `___UIApplicationEvaluateRuntimeIssueForNoSceneLifecycleAdoption_block_invoke`에서 EXC_BREAKPOINT. Xcode 27 SDK 빌드의 UIScene 미채택이 원인.
+- `TypingConverterSceneDelegate`에서 UIWindowScene 창을 생성하고 React Native 시작. Expo 앱 활성화/백그라운드 및 링크 콜백 전달. Info.plist scene manifest 등록, 여러 창 비활성화. SDK 54 prebuild용 플러그인으로 재생성 시에도 유지.
+- 자동 테스트 41개 통과. Release 시뮬레이터: iOS 18.4 실행/변환/구매 모달/의견 모달 확인. iOS 27 iPhone 17 Pro Max 정상 실행/변환, iPad Air 11-inch (M3) 시작 광고 표시·닫기·변환기 및 배너 로드 확인. 실제 iOS 27 하드웨어 검증은 아님.
+- 로컬 EAS 빌드 26.9.1 (4) 성공. IPA `/tmp/typing-ios4-artifacts/build-1790676023202.ipa`. 실제 아카이브의 iOS 27 SDK, 빌드 번호, scene manifest 확인.
+- EAS Submit `5b1d54cb-ada9-48cc-9d41-d22183acbc53` Apple 업로드 성공. 재심사 최종 제출은 아직 미완료: 브라우저 연결 실패 및 열린 제출 탭이 사라지는 문제로 UI 작업 대기.
