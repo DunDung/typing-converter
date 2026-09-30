@@ -197,3 +197,11 @@ cd android
 - 자동 테스트 41개 통과. Release 시뮬레이터: iOS 18.4 실행/변환/구매 모달/의견 모달 확인. iOS 27 iPhone 17 Pro Max 정상 실행/변환, iPad Air 11-inch (M3) 시작 광고 표시·닫기·변환기 및 배너 로드 확인. 실제 iOS 27 하드웨어 검증은 아님.
 - 로컬 EAS 빌드 26.9.1 (4) 성공. IPA `/tmp/typing-ios4-artifacts/build-1790676023202.ipa`. 실제 아카이브의 iOS 27 SDK, 빌드 번호, scene manifest 확인.
 - EAS Submit `5b1d54cb-ada9-48cc-9d41-d22183acbc53` Apple 업로드 성공. 2026-09-29 20:50 KST 재심사 최종 제출 완료. 기존 제출 `05beb02e-5706-41ad-a7cf-c223ca2d1b1f`에 26.9.1 (4)와 광고 제거 상품을 함께 제출하여 두 항목 모두 `심사 대기 중` 확인. 심사 메모에 UIScene 수정과 시뮬레이터 검증 범위 명시. 승인 후 자동 출시 유지. 증빙 `/tmp/typing-ios4-review-resubmitted.png`.
+
+
+## 2026-09-30 광고 연령 등급 수정 및 재심사
+
+- 16:09 Apple 자동 검사에서 2.3.6 거절: 광고 SDK가 있으나 연령 등급 Advertising이 No로 설정됨. 이번 메시지는 크래시 재발 보고가 아니며 실행 심사 통과를 의미하지도 않음.
+- Advertising을 Yes로 수정. 소셜 미디어 관련 미응답 항목은 실제 기능에 맞게 No로 입력. 다른 콘텐츠 응답 확인 후 저장. 새 탭에서 재조회하여 advertising__true 선택 상태 확인. 한국 전체/글로벌 4+ 유지.
+- 심사 메모에 광고 포함 및 수정 내용을 명시. 기존 26.9.1 (4)와 광고 제거 상품을 21:49 KST 최종 재제출, 두 항목 모두 심사 대기 중 확인. 새 빌드 없음. 증빙: /tmp/typing-sep30-resubmitted.png.
+- 후속 제출 시 앱 실제 기능과 연령 등급 광고/소셜/UGC 응답을 대조하고 저장된 값을 재조회한 뒤 제출한다.
