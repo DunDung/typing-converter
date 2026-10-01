@@ -23,6 +23,17 @@
     <div v-if="!headerFeedback" class="feedback-link">
       <v-btn class="feedback-button" variant="text" color="grey-darken-2" height="44" @click="dialog = true">의견 보내기</v-btn>
     </div>
+    <v-dialog v-model="updateDialog" max-width="400" aria-labelledby="update-title">
+      <v-card rounded="xl">
+        <v-card-title id="update-title" class="text-h6 pt-5 px-6">새 버전으로 업데이트해 주세요</v-card-title>
+        <v-card-text>더 편해진 입력 화면과 광고 제거 구매 기능을 이용할 수 있어요.</v-card-text>
+        <v-card-actions class="px-4 pb-4">
+          <v-spacer />
+          <v-btn variant="text" color="grey-darken-2" @click="updateDialog = false">나중에</v-btn>
+          <v-btn color="indigo-darken-1" variant="flat" :href="updateStoreUrl" @click="updateDialog = false">업데이트</v-btn>
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
       <!-- 건의사항 입력 모달 -->
       <v-dialog v-model="dialog" max-width="480">
         <v-card rounded="xl">
@@ -73,6 +84,7 @@ import { defineComponent, ref, computed, onMounted, onBeforeUnmount, nextTick } 
 import { englishToKorean, koreanToEnglish } from '../utils/converter';
 import { copyText } from "../utils/clipboard";
 import { connectFeedback, announceConverterReady } from "../utils/nativeFeedback.mjs";
+import { legacyPlatform, claimReminder, storeLinks } from "../utils/updateReminder.mjs";
 import * as emailjs from "@emailjs/browser";
 
 export default defineComponent({
@@ -82,6 +94,13 @@ export default defineComponent({
     const viewportHeight = ref(window.visualViewport?.height || window.innerHeight);
     const resizeViewport = () => {
       viewportHeight.value = Math.round(Math.min(window.innerHeight, window.visualViewport?.height || window.innerHeight));
+    };
+    const updateDialog = ref(false);
+    const legacy = legacyPlatform({ search: window.location.search, userAgent: navigator.userAgent, maxTouchPoints: navigator.maxTouchPoints });
+    const updateStoreUrl = legacy ? storeLinks[legacy] : '';
+    const checkUpdateReminder = () => {
+      if (!legacy || document.visibilityState === 'hidden' || updateDialog.value || dialog.value || inputText.value || document.activeElement?.tagName === 'TEXTAREA') return;
+      try { updateDialog.value = claimReminder(window.localStorage); } catch { /* storage unavailable */ }
     };
     const headerFeedback = ref(false);
     let disconnectFeedback;
@@ -96,8 +115,11 @@ export default defineComponent({
       });
       await nextTick();
       stopReadyAnnouncement = announceConverterReady(window);
+      checkUpdateReminder();
+      document.addEventListener("visibilitychange", checkUpdateReminder);
     });
     onBeforeUnmount(() => {
+      document.removeEventListener("visibilitychange", checkUpdateReminder);
       disconnectFeedback?.();
       stopReadyAnnouncement?.();
       window.visualViewport?.removeEventListener("resize", resizeViewport);
@@ -163,7 +185,7 @@ export default defineComponent({
     });
 
     return {
-      viewportHeight, headerFeedback, nativeApp, clearInput, copyMessage, copying,
+      updateDialog, updateStoreUrl, viewportHeight, headerFeedback, nativeApp, clearInput, copyMessage, copying,
       mappingTarget,
       inputText,
       snackbarFlag,
