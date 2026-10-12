@@ -220,3 +220,5 @@ cd android
 - 선택 동의 전 Google 태그 로드하지 않음. 이용 통계 설정에서 허용/거부/철회 가능. 동의한 사용자만 활성 사용자 집계하므로 전체 설치 사용자 수와 다름. 광고 관련 저장·개인화·Google Signals 비활성, 스트림 향상된 측정 비활성 확인.
 - 문장·결과·의견·임의 이벤트·URL query/referrer 제외. 허용된 이벤트 converter_open/result_copy와 방향 enum만 전송. 개발 호스트 수집 차단. 개인정보 안내 갱신.
 - 프론트 테스트 6개 및 production 빌드 통과. 실기기 WebView 수신 검증은 미완료. 집계는 연결 이후부터 시작하며 과거 DAU/WAU/MAU 복구 불가.
+- 운영 웹 배포 dc5f227 반영 확인. Chrome의 ?native=1 화면에서 선택 동의 후 변환·복사 실행, Firebase 실시간에서 converter_open/first_visit/result_copy/session_start 각각 1건 및 이용 환경 사용자 속성 수신 확인. 이는 브라우저 테스트 1명이며 실사용자 수·실기기 WebView 검증이 아님. 증빙 /tmp/typing-analytics-connected.png.
+- 이 작업에서 생성된 frontend/node_modules/.cache 15.1 MiB 정리. 기존 Android 빌드 폴더 2.5 GiB는 이번 작업에 사용하지 않은 기존 산출물이며 동시 작업 사용 여부가 확정되지 않아 보존.
