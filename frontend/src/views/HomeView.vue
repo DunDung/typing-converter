@@ -23,6 +23,14 @@
     <div v-if="!headerFeedback" class="feedback-link">
       <v-btn class="feedback-button" variant="text" color="grey-darken-2" height="44" @click="dialog = true">의견 보내기</v-btn>
     </div>
+    <div class="usage-settings"><button type="button" @click="analyticsDialog = true">이용 통계 설정</button></div>
+    <v-dialog v-model="analyticsDialog" max-width="400">
+      <v-card rounded="xl">
+        <v-card-title class="text-h6 pt-5 px-6" style="white-space: normal">서비스 개선을 위한 이용 통계</v-card-title>
+        <v-card-text>Google Analytics에 방문·복사 이용 정보와 접속 환경, 쿠키 식별자를 보내도 될까요? 입력한 문장과 의견 내용은 보내지 않아요. 선택은 언제든 바꿀 수 있어요. <a href="./privacy.html" target="_blank" rel="noopener">자세히 보기</a></v-card-text>
+        <v-card-actions class="px-4 pb-4"><v-spacer /><v-btn @click="chooseAnalytics('denied')">허용 안 함</v-btn><v-btn color="indigo-darken-1" @click="chooseAnalytics('granted')">허용</v-btn></v-card-actions>
+      </v-card>
+    </v-dialog>
     <v-dialog v-model="updateDialog" max-width="400" aria-labelledby="update-title">
       <v-card rounded="xl">
         <v-card-title id="update-title" class="text-h6 pt-5 px-6">새 버전으로 업데이트해 주세요</v-card-title>
@@ -85,12 +93,16 @@ import { englishToKorean, koreanToEnglish } from '../utils/converter';
 import { copyText } from "../utils/clipboard";
 import { connectFeedback, announceConverterReady } from "../utils/nativeFeedback.mjs";
 import { legacyPlatform, claimReminder, storeLinks } from "../utils/updateReminder.mjs";
+import { createUsageAnalytics } from "../utils/usageAnalytics.mjs";
 import * as emailjs from "@emailjs/browser";
 
 export default defineComponent({
   name: "HomeView",
 
   setup() {
+    const usageAnalytics = createUsageAnalytics(window);
+    const analyticsDialog = ref(usageAnalytics.consent !== 'granted' && usageAnalytics.consent !== 'denied');
+    const chooseAnalytics = value => { usageAnalytics.setConsent(value); analyticsDialog.value = false; };
     const viewportHeight = ref(window.visualViewport?.height || window.innerHeight);
     const resizeViewport = () => {
       viewportHeight.value = Math.round(Math.min(window.innerHeight, window.visualViewport?.height || window.innerHeight));
@@ -99,7 +111,7 @@ export default defineComponent({
     const legacy = legacyPlatform({ search: window.location.search, userAgent: navigator.userAgent, maxTouchPoints: navigator.maxTouchPoints });
     const updateStoreUrl = legacy ? storeLinks[legacy] : '';
     const checkUpdateReminder = () => {
-      if (!legacy || document.visibilityState === 'hidden' || updateDialog.value || dialog.value || inputText.value || document.activeElement?.tagName === 'TEXTAREA') return;
+      if (!legacy || analyticsDialog.value || document.visibilityState === 'hidden' || updateDialog.value || dialog.value || inputText.value || document.activeElement?.tagName === 'TEXTAREA') return;
       try { updateDialog.value = claimReminder(window.localStorage); } catch { /* storage unavailable */ }
     };
     const headerFeedback = ref(false);
@@ -145,6 +157,7 @@ export default defineComponent({
       const text = convertInputText.value;
       try {
         await copyText(text);
+        usageAnalytics.track("result_copy", mappingTarget.value);
         copyMessage.value = "복사 완료! 원하는 곳에 붙여넣으세요.";
       } catch {
         copyMessage.value = "복사하지 못했어요. 결과를 길게 눌러 복사해 주세요.";
@@ -185,7 +198,7 @@ export default defineComponent({
     });
 
     return {
-      updateDialog, updateStoreUrl, viewportHeight, headerFeedback, nativeApp, clearInput, copyMessage, copying,
+      analyticsDialog, chooseAnalytics, updateDialog, updateStoreUrl, viewportHeight, headerFeedback, nativeApp, clearInput, copyMessage, copying,
       mappingTarget,
       inputText,
       snackbarFlag,
@@ -201,6 +214,8 @@ export default defineComponent({
 </script>
 
 <style scoped>
+.usage-settings { text-align: center; font-size: 12px; color: #64748b; margin-bottom: 8px; }
+.usage-settings button { min-height: 32px; }
 .converter-shell { max-width: 640px; padding: 16px; color: #18243b; }
 .native-shell { height: 100vh; height: 100dvh; min-height: 420px; display: flex; flex-direction: column; }
 .native-shell > .text-panel { flex: 1; min-height: 0; display: flex; flex-direction: column; }
